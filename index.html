@@ -1,544 +1,199 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title> Study App</title>
-    
-    <!-- Google Fonts: Special Elite, Cinzel Decorative, Courier Prime -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS Engine -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        noirDark: '#080706',
-                        noirBg: '#0d0b0a',
-                        noirCard: '#141110',
-                        noirCrimson: '#991111',
-                        noirRedGlow: '#ff2222',
-                        noirGold: '#c99a4e',
-                        noirAged: '#dcd3be',
-                    },
-                    fontFamily: {
-                        cinzel: ['"Cinzel Decorative"', 'serif'],
-                        typewriter: ['"Special Elite"', 'monospace'],
-                        monoText: ['"Courier Prime"', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập</title>
     <style>
-        /* Allow full vertical scrolling on all screen sizes (mobile touch included) */
-        html, body {
-            min-height: 100vh;
-            min-height: 100dvh;
+        :root {
+            --bg-main: #0f1117;
+            --card-bg: #1a1d26;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-start: #ff3b5c;
+            --accent-end: #e60033;
+            --border-color: #2a2f3d;
+            --input-bg: #141720;
+        }
+
+        .light-mode {
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent-start: #dc2626;
+            --accent-end: #b91c1c;
+            --border-color: #e2e8f0;
+            --input-bg: #f1f5f9;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        .login-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 2.5rem 2rem;
+            border-radius: 1rem;
             width: 100%;
-            background-color: #0d0b0a;
-            color: #dcd3be;
-            font-family: 'Special Elite', monospace;
-            /* FIX: Ensure vertical touch scrolling works smoothly on mobile */
-            overflow-x: hidden;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            max-width: 380px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+            transition: background-color 0.3s, border-color 0.3s;
         }
 
-        /* Fixed background overlay so vignette doesn't break while scrolling */
-        .vignette-overlay {
-            position: fixed;
-            inset: 0;
-            background: 
-                radial-gradient(circle at 50% 30%, rgba(30, 15, 15, 0.45) 0%, rgba(13, 11, 10, 0.85) 60%, rgba(5, 4, 4, 0.98) 100%),
-                radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.9) 100%);
-            pointer-events: none;
-            z-index: 1;
+        h1 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
         }
 
-        /* Fixed Film Grain Effect */
-        .film-grain {
-            position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 2;
+        .form-group {
+            margin-bottom: 1.25rem;
         }
 
-        /* Title Glow and Distress Effects */
-        .title-crimson-glow {
-            text-shadow: 
-                0 0 10px rgba(255, 34, 34, 0.7),
-                0 0 20px rgba(153, 17, 17, 0.9),
-                0 0 35px rgba(100, 0, 0, 0.8),
-                2px 2px 3px rgba(0, 0, 0, 0.9);
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 500;
         }
 
-        .title-aged-glow {
-            text-shadow: 
-                0 0 8px rgba(220, 211, 190, 0.4),
-                2px 2px 4px rgba(0, 0, 0, 0.9);
-        }
-
-        /* Fixed Canvas Particle Layer */
-        #dustCanvas {
-            position: fixed;
-            top: 0;
-            left: 0;
+        input {
             width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 3;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.2s;
         }
 
-        /* Detective Photo Frame Vignette */
-        .frame-vignette {
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.95), inset 0 0 15px rgba(0,0,0,0.8);
+        input:focus {
+            outline: none;
+            border-color: var(--accent-start);
         }
 
-        /* Pulse Animation for Start Button Icon */
-        @keyframes subtlePulse {
-            0%, 100% { opacity: 0.85; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.08); }
-        }
-        .pulse-icon {
-            animation: subtlePulse 2s infinite ease-in-out;
-        }
-
-        /* Custom Hover Border & Glow for Start Button */
-        .pill-button {
-            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-            background: linear-gradient(180deg, #1f1816 0%, #0d0b0a 100%);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.8), 0 0 2px rgba(201, 154, 78, 0.3);
-            touch-action: manipulation;
+        .submit-btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: opacity 0.2s, transform 0.1s;
         }
 
-        .pill-button:hover, .pill-button:active {
-            transform: translateY(-2px) scale(1.02);
-            border-color: #ff2222;
-            box-shadow: 
-                0 0 25px rgba(255, 34, 34, 0.5),
-                0 0 50px rgba(153, 17, 17, 0.3),
-                inset 0 0 15px rgba(255, 34, 34, 0.2);
+        .submit-btn:hover {
+            opacity: 0.9;
         }
 
-        /* Shutter Flash Screen Overlay for Navigation Transition */
-        #shutterFlash {
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.15s ease-in-out;
-        }
-        #shutterFlash.active {
-            opacity: 1;
+        .submit-btn:active {
+            transform: scale(0.98);
         }
 
-        /* Stamp Aesthetic */
-        .classified-stamp {
-            border: 3px solid #991111;
-            color: #ff3333;
-            transform: rotate(-6deg);
-            text-shadow: 0 0 5px rgba(255,0,0,0.5);
-            box-shadow: 0 0 10px rgba(153,17,17,0.3);
+        .error-msg {
+            color: #ef4444;
+            font-size: 0.875rem;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .hint {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 1.5rem;
         }
     </style>
 </head>
-<body class="min-h-screen w-full relative select-none bg-noirBg">
+<body>
 
-    <!-- Background Vignette Layer (Fixed position to allow seamless body scroll) -->
-    <div class="vignette-overlay"></div>
-    
-    <!-- Film Grain Overlay -->
-    <div class="film-grain"></div>
+    <button class="theme-toggle" id="themeToggleBtn" onclick="toggleTheme()" title="Đổi giao diện">🌙</button>
 
-    <!-- Atmospheric Dust Particles Canvas -->
-    <canvas id="dustCanvas"></canvas>
-
-    <!-- Camera Shutter Flash Overlay for Click Transition -->
-    <div id="shutterFlash" class="fixed inset-0 bg-white z-50"></div>
-
-    <!-- Audio Control Toggle (Top Right) -->
-    <div class="fixed top-4 right-4 z-40 flex items-center gap-2">
-        <button id="audioToggleBtn" onclick="toggleAmbientAudio()" class="px-3 py-1.5 rounded-full border border-noirGold/40 bg-noirCard/90 text-noirAged/80 text-xs tracking-widest hover:border-noirGold hover:text-noirGold transition-all flex items-center gap-2 shadow-lg backdrop-blur-md active:scale-95">
-            <span id="audioIcon">🔇</span>
-            <span id="audioText">AMBIENCE: OFF</span>
-        </button>
-    </div>
-
-    <!-- Top Corner Classified Badge -->
-    <div class="fixed top-4 left-4 z-30 hidden sm:block">
-        <div class="classified-stamp font-typewriter text-xs font-bold px-3 py-1 uppercase tracking-widest rounded-sm border-dashed bg-noirDark/80 backdrop-blur-sm">
-            look what look?
-        </div>
-    </div>
-
-    <!-- MAIN CONTENT CONTAINER (Scrollable container with responsive vertical padding) -->
-    <main class="relative z-20 w-full max-w-5xl px-4 py-8 sm:py-12 min-h-screen flex flex-col justify-between items-center mx-auto space-y-8">
-        
-        <!-- TOP SECTION: Dramatic Game Title Header -->
-        <header class="text-center mt-6 sm:mt-10 space-y-3 max-w-3xl w-full">
-            <!-- Subtitle / File Metadata with Typewriter Animation -->
-            <div class="text-noirGold/90 text-xs sm:text-sm tracking-widest uppercase font-monoText mb-2 flex items-center justify-center gap-2 flex-wrap">
-                <span class="inline-block w-2 h-2 rounded-full bg-noirCrimson animate-ping"></span>
-                <span id="typewriterTarget"></span>
+    <div class="login-card">
+        <h1>Đăng nhập để tiếp tục</h1>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="username">Tài khoản</label>
+                <input type="text" id="username" required placeholder="Nhập tài khoản...">
             </div>
-
-            <!-- Main Title Header -->
-            <h1 class="font-cinzel text-3xl sm:text-5xl md:text-6xl font-black tracking-wider leading-tight text-noirAged uppercase px-2">
-                <span class="block text-noirAged title-aged-glow">UNIT 11:</span>
-                <span class="block text-noirCrimson title-crimson-glow mt-1 sm:mt-2 tracking-widest">ELECTRONIC DEVICES</span>
-            </h1>
-
-            <div class="w-32 sm:w-48 h-0.5 bg-gradient-to-r from-transparent via-noirCrimson to-transparent mx-auto mt-4 opacity-80"></div>
-        </header>
-
-        <!-- CENTER SECTION: Wide Horizontal Group Silhouette Banner -->
-        <section class="w-full my-4 sm:my-8 flex justify-center">
-            <div class="relative w-full max-w-3xl group">
-                <!-- Outer Decorative Frame -->
-                <div class="relative p-2 sm:p-3 bg-noirCard border border-noirGold/30 rounded-lg shadow-2xl transition-all duration-500 group-hover:border-noirCrimson/60">
-                    
-                    <!-- Decorative Corner Accents -->
-                    <div class="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-noirGold"></div>
-                    <div class="absolute -top-1 -right-1 w-4 h-4 border-t-2 border-r-2 border-noirGold"></div>
-                    <div class="absolute -bottom-1 -left-1 w-4 h-4 border-b-2 border-l-2 border-noirGold"></div>
-                    <div class="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-noirGold"></div>
-
-                    <!-- Inner Image Frame Container -->
-                    <div class="relative w-full h-48 sm:h-72 md:h-80 rounded overflow-hidden bg-noirDark flex items-center justify-center">
-                        
-                        <!-- Image Source with automatic fallback SVG -->
-                        <img 
-                            src="images.jpg" 
-                            alt="Group Silhouette Investigation" 
-                            class="w-full h-full object-cover filter contrast-125 brightness-75 grayscale hover:grayscale-0 transition-all duration-700 ease-out"
-                            onerror="this.onerror=null; this.classList.add('hidden'); document.getElementById('svgFallback').classList.remove('hidden');"
-                        />
-
-                        <!-- Fallback SVG Vector Silhouette -->
-                        <div id="svgFallback" class="hidden absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-stone-900 via-neutral-900 to-black p-4 text-center">
-                            <svg class="w-full h-full text-stone-700/60 max-h-56" viewBox="0 0 600 200" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M 120,180 C 120,130 140,110 160,110 C 180,110 200,130 200,180 Z" />
-                                <circle cx="160" cy="85" r="22" />
-                                <path d="M 130,70 Q 160,50 190,70 L 195,78 L 125,78 Z" fill="#111" />
-                                
-                                <path d="M 250,190 C 250,120 280,100 300,100 C 320,100 350,120 350,190 Z" />
-                                <circle cx="300" cy="70" r="25" />
-                                <path d="M 265,58 Q 300,35 335,58 L 340,65 L 260,65 Z" fill="#0d0d0d" />
-
-                                <path d="M 400,180 C 400,130 420,110 440,110 C 460,110 480,130 480,180 Z" />
-                                <circle cx="440" cy="85" r="22" />
-                                
-                                <rect x="0" y="180" width="600" height="20" fill="url(#fogGradient)" />
-                                <defs>
-                                    <linearGradient id="fogGradient" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="transparent" />
-                                        <stop offset="100%" stop-color="#0d0b0a" />
-                                    </linearGradient>
-                                </defs>
-                            </svg>
-                            <span class="text-xs text-noirGold/50 font-monoText uppercase tracking-widest mt-1">[ Illustration image ]</span>
-                        </div>
-
-                        <!-- Vignette and Shadow Overlay -->
-                        <div class="absolute inset-0 frame-vignette pointer-events-none"></div>
-                        <div class="absolute inset-0 bg-gradient-to-t from-noirBg via-transparent to-noirBg/40 pointer-events-none"></div>
-
-                        <!-- Top-Left Evidence Tag Overlay -->
-                        <div class="absolute top-3 left-3 bg-black/80 border border-noirGold/40 px-2 py-1 rounded text-[10px] text-noirAged font-monoText tracking-wider backdrop-blur-sm">
-                          
-                        </div>
-                    </div>
-
-                    <!-- Frame Footer Caption -->
-                    <div class="mt-2 flex flex-wrap justify-between items-center gap-2 px-1 text-[11px] text-noirAged/60 font-monoText">
-                        <span> ID: 0xxxxxxx</span>
-                        <span class="text-noirCrimson font-bold">GOOD EVENING</span>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label for="password">Mật khẩu</label>
+                <input type="password" id="password" required placeholder="Nhập mật khẩu...">
             </div>
-        </section>
-
-        <!-- BOTTOM SECTION: Prominent Interactive Start Button -->
-        <footer class="pb-8 pt-2 w-full flex flex-col items-center justify-center">
-            <button 
-                id="startButton" 
-                onclick="navigateToTarget('trangchu.html')"
-                onmouseenter="playHoverSFX()"
-                class="pill-button relative group px-6 sm:px-12 py-3.5 sm:py-5 rounded-full border-2 border-noirGold/60 text-noirAged flex items-center gap-3 sm:gap-5 cursor-pointer outline-none focus:ring-2 focus:ring-noirCrimson w-full max-w-xs sm:max-w-md justify-center active:scale-95"
-                aria-label="Start Investigation and enter home page"
-            >
-                <!-- Outer Aura Glow Effect -->
-                <div class="absolute -inset-1 rounded-full bg-gradient-to-r from-noirCrimson via-noirRedGlow to-noirGold opacity-0 group-hover:opacity-40 blur-md transition duration-500"></div>
-
-                <!-- Horizontal Oval Icon Container with Play Triangle -->
-                <div class="relative shrink-0 w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-noirCrimson/90 group-hover:bg-noirRedGlow flex items-center justify-center border border-noirAged/40 shadow-inner transition-transform duration-300 group-hover:scale-110">
-                    <svg class="w-4 h-4 sm:w-6 sm:h-6 text-noirAged fill-current translate-x-0.5 pulse-icon" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                    </svg>
-                </div>
-
-                <!-- Button Label Text -->
-                <div class="relative text-left flex flex-col">
-                    <span class="font-cinzel text-sm sm:text-xl font-bold tracking-widest text-noirAged group-hover:text-white transition-colors">
-                        ENTER THE CLASS
-                    </span>
-                    <span class="text-[9px] sm:text-xs font-monoText text-noirGold/70 group-hover:text-noirAged transition-colors tracking-widest">
-                        CLICK TO OPEN 
-                    </span>
-                </div>
-
-                <!-- Right Arrow -->
-                <div class="relative hidden sm:block ml-1 text-noirGold group-hover:text-noirRedGlow group-hover:translate-x-1 transition-all duration-300">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                    </svg>
-                </div>
-            </button>
-
-            <p class="mt-3 text-[11px] sm:text-xs text-noirAged/40 font-monoText text-center">Press <kbd class="px-1.5 py-0.5 bg-noirCard border border-noirAged/30 rounded text-[10px]">ENTER</kbd> or swipe/tap to proceed</p>
-        </footer>
-
-    </main>
+            <button type="submit" class="submit-btn">Đăng nhập</button>
+            <div id="errorMsg" class="error-msg">Sai tài khoản hoặc mật khẩu!</div>
+        </form>
+        <div class="hint">nhìn cái j mà nhìn?</div>
+    </div>
 
     <script>
-        /* ==========================================================================
-           1. CONFIGURATION & TARGET URL
-           ========================================================================== */
-        const DEFAULT_TARGET_PAGE = 'trangchu.html';
-
-        /* ==========================================================================
-           2. DYNAMIC TYPEWRITER EFFECT
-           ========================================================================== */
-        const typewriterText = "STUDY APP // SUBJECT: ENGLISH 11";
-        const typewriterTarget = document.getElementById('typewriterTarget');
-        let charIndex = 0;
-
-        function typeWriter() {
-            if (charIndex < typewriterText.length) {
-                typewriterTarget.textContent += typewriterText.charAt(charIndex);
-                charIndex++;
-                setTimeout(typeWriter, 45);
-            }
-        }
-
-        /* ==========================================================================
-           3. WEB AUDIO SYNTHESIZER
-           ========================================================================== */
-        let audioCtx = null;
-        let isAudioPlaying = false;
-        let ambientOscillator = null;
-        let ambientGain = null;
-
-        function initAudioContext() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-
-        function playShutterSFX() {
-            initAudioContext();
-            if (!audioCtx) return;
-
-            const now = audioCtx.currentTime;
-            const bufferSize = audioCtx.sampleRate * 0.12;
-            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = Math.random() * 2 - 1;
-            }
-
-            const noise = audioCtx.createBufferSource();
-            noise.buffer = buffer;
-
-            const filter = audioCtx.createBiquadFilter();
-            filter.type = 'bandpass';
-            filter.frequency.setValueAtTime(1200, now);
-            filter.Q.setValueAtTime(3, now);
-
-            const gain = audioCtx.createGain();
-            gain.gain.setValueAtTime(0.8, now);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-
-            noise.connect(filter);
-            filter.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            noise.start(now);
-        }
-
-        function playHoverSFX() {
-            try {
-                initAudioContext();
-                if (!audioCtx) return;
-
-                const now = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(180, now);
-                osc.frequency.exponentialRampToValueAtTime(40, now + 0.04);
-
-                gain.gain.setValueAtTime(0.15, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.04);
-
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                osc.start(now);
-                osc.stop(now + 0.05);
-            } catch (e) {}
-        }
-
-        function toggleAmbientAudio() {
-            initAudioContext();
-            const btnText = document.getElementById('audioText');
-            const btnIcon = document.getElementById('audioIcon');
-
-            if (isAudioPlaying) {
-                if (ambientGain) {
-                    ambientGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1);
-                    setTimeout(() => {
-                        if (ambientOscillator) ambientOscillator.stop();
-                    }, 1000);
-                }
-                isAudioPlaying = false;
-                btnText.textContent = "AMBIENCE: OFF";
-                btnIcon.textContent = "🔇";
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById('themeToggleBtn');
+            body.classList.toggle('light-mode');
+            if (body.classList.contains('light-mode')) {
+                btn.textContent = '☀️';
             } else {
-                ambientOscillator = audioCtx.createOscillator();
-                const subOsc = audioCtx.createOscillator();
-                ambientGain = audioCtx.createGain();
-
-                ambientOscillator.type = 'sawtooth';
-                subOsc.type = 'sine';
-
-                ambientOscillator.frequency.setValueAtTime(55, audioCtx.currentTime);
-                subOsc.frequency.setValueAtTime(27.5, audioCtx.currentTime);
-
-                const filter = audioCtx.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(180, audioCtx.currentTime);
-
-                ambientGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-                ambientGain.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 2);
-
-                ambientOscillator.connect(filter);
-                subOsc.connect(filter);
-                filter.connect(ambientGain);
-                ambientGain.connect(audioCtx.destination);
-
-                ambientOscillator.start();
-                subOsc.start();
-                isAudioPlaying = true;
-                btnText.textContent = "AMBIENCE: ON";
-                btnIcon.textContent = "🔊";
+                btn.textContent = '🌙';
             }
         }
 
-        /* ==========================================================================
-           4. NAVIGATION & TRANSITION
-           ========================================================================== */
-        function navigateToTarget(targetUrl = DEFAULT_TARGET_PAGE) {
-            playShutterSFX();
+        function handleLogin(event) {
+            event.preventDefault();
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
 
-            const flash = document.getElementById('shutterFlash');
-            flash.classList.add('active');
-
-            setTimeout(() => {
-                window.location.href = targetUrl;
-            }, 300);
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                navigateToTarget();
-            }
-        });
-
-        /* ==========================================================================
-           5. DUST PARTICLES CANVAS
-           ========================================================================== */
-        const canvas = document.getElementById('dustCanvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
-        class DustParticle {
-            constructor() {
-                this.reset();
-            }
-
-            reset() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 2 + 0.5;
-                this.speedX = (Math.random() - 0.5) * 0.3;
-                this.speedY = (Math.random() - 0.7) * 0.4;
-                this.opacity = Math.random() * 0.5 + 0.1;
-            }
-
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-
-                if (this.y < 0 || this.x < 0 || this.x > canvas.width) {
-                    this.reset();
-                    this.y = canvas.height;
-                }
-            }
-
-            draw() {
-                ctx.fillStyle = `rgba(220, 211, 190, ${this.opacity})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
+            if (user === '12367' && pass === '12367') {
+                localStorage.setItem('isLoggedIn', 'true');
+                window.location.href = 'home.html';
+            } else {
+                const errorEl = document.getElementById('errorMsg');
+                errorEl.style.display = 'block';
             }
         }
-
-        function initParticles() {
-            particles = [];
-            const count = Math.floor((window.innerWidth * window.innerHeight) / 12000);
-            for (let i = 0; i < count; i++) {
-                particles.push(new DustParticle());
-            }
-        }
-
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-            requestAnimationFrame(animateParticles);
-        }
-
-        /* ==========================================================================
-           6. INITIALIZATION
-           ========================================================================== */
-        window.addEventListener('load', () => {
-            resizeCanvas();
-            initParticles();
-            animateParticles();
-            typeWriter();
-        });
-
-        window.addEventListener('resize', () => {
-            resizeCanvas();
-            initParticles();
-        });
     </script>
 </body>
 </html>
