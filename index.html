@@ -289,7 +289,7 @@
         <!-- FORM ĐĂNG NHẬP HỌC VIÊN -->
         <form id="loginForm" class="form-section active" onsubmit="handleLogin(event)">
             <div class="form-group">
-                <label>Tên tài khoản</label>
+                <label>Tên tài khoản (Email)</label>
                 <input type="email" id="loginEmail" required placeholder="choshuy123@gmail.com">
             </div>
             <div class="form-group">
@@ -327,23 +327,24 @@
                 <input type="password" id="adminPassword" required placeholder="••••••••">
             </div>
             <div class="form-group">
-                <label>Mật khẩu 2</label>
+                <label>Mật khẩu bảo mật cấp 2</label>
                 <input type="password" id="adminSecretKey" required placeholder="••••••••">
             </div>
-            <button type="submit" class="submit-btn admin-btn" id="adminBtn">Đăng nhập</button>
+            <button type="submit" class="submit-btn admin-btn" id="adminBtn">Đăng nhập Quản Trị</button>
         </form>
 
         <div id="statusMsg" class="status-msg"></div>
     </div>
 
-    <!-- FIREBASE SDK MODULAR (v10) -->
+    <!-- FIREBASE SDK MODULAR (v10) & LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
         import { 
             getAuth, 
             signInWithEmailAndPassword, 
             createUserWithEmailAndPassword, 
-            updateProfile 
+            updateProfile,
+            signOut 
         } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
         import { 
             getFirestore, 
@@ -352,14 +353,15 @@
             getDoc 
         } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-        // CẤU HÌNH FIREBASE
+        // CẤU HÌNH FIREBASE CỦA BẠN
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyB6d4Ss3lSChwgJJGEmcVG3wBQRPARMOg4",
+            authDomain: "vocz-63be8.firebaseapp.com",
+            projectId: "vocz-63be8",
+            storageBucket: "vocz-63be8.firebasestorage.app",
+            messagingSenderId: "204455509635",
+            appId: "1:204455509635:web:a8dd1dd3b4e0f60fb125b6",
+            measurementId: "G-G0Q1PRGD8T"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -406,7 +408,7 @@
             el.textContent = '';
         }
 
-        // 1. ĐĂNG KÝ HỌC VIÊN
+        // 1. ĐĂNG KÝ HỌC VIÊN (Mặc định status: "pending" - Chờ duyệt)
         window.handleRegister = async function(e) {
             e.preventDefault();
             clearStatus();
@@ -420,12 +422,13 @@
 
                 await updateProfile(user, { displayName: name });
 
-                // Khởi tạo hồ sơ ban đầu trên Firestore
+                // Khởi tạo hồ sơ ban đầu trên Firestore với trạng thái chờ duyệt
                 await setDoc(doc(db, "users", user.uid), {
                     uid: user.uid,
                     displayName: name,
                     email: email,
                     role: "student",
+                    status: "pending", // QUAN TRỌNG: Chờ admin duyệt mới cho vào
                     vocab_cp: 0,
                     lis_cp: 0,
                     read_cp: 0,
@@ -436,19 +439,16 @@
                     createdAt: new Date().toISOString()
                 });
 
-                // Đồng bộ localStorage cho web VOCZ
-                localStorage.setItem('vocz_uid', user.uid);
-                localStorage.setItem('vocz_user_name', name);
-                localStorage.setItem('vocz_role', 'student');
+                // Đăng xuất ngay lập tức để học viên không vào được trang chính khi chưa duyệt
+                await signOut(auth);
 
-                showStatus("Khởi tạo thành công! Đang tiến vào tông môn...");
-                setTimeout(() => window.location.href = "home.html", 1000);
+                showStatus("Đăng ký thành công! Tài khoản của bạn đang chờ Vua (Admin) phê duyệt.");
             } catch (err) {
                 showStatus(err.message, true);
             }
         };
 
-        // 2. ĐĂNG NHẬP HỌC VIÊN
+        // 2. ĐĂNG NHẬP HỌC VIÊN (Kiểm tra trạng thái duyệt)
         window.handleLogin = async function(e) {
             e.preventDefault();
             clearStatus();
@@ -459,12 +459,21 @@
                 const userCredential = await signInWithEmailAndPassword(auth, email, pass);
                 const user = userCredential.user;
 
-                // Lấy thông tin chỉ số từ Firestore nạp vào LocalStorage
+                // Lấy thông tin từ Firestore
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+
+                    // KIỂM TRA TRẠNG THÁI: Nếu chưa được duyệt thì chặn lại
+                    if (data.status !== "approved" && data.role !== "admin") {
+                        await signOut(auth);
+                        showStatus("Tài khoản của bạn đang chờ Admin phê duyệt, chưa thể đăng nhập!", true);
+                        return;
+                    }
+
+                    // Lưu thông tin vào localStorage và chuyển vào home
                     localStorage.setItem('vocz_uid', user.uid);
                     localStorage.setItem('vocz_user_name', data.displayName || 'Võ Giả');
                     localStorage.setItem('vocz_role', data.role || 'student');
@@ -474,10 +483,12 @@
                     localStorage.setItem('vocz_write_cp', data.write_cp || 0);
                     localStorage.setItem('vocz_speak_cp', data.speak_cp || 0);
                     localStorage.setItem('vocz_streak', data.streak || 0);
-                }
 
-                showStatus("Đăng nhập thành công! Đang chuyển hướng...");
-                setTimeout(() => window.location.href = "home.html", 800);
+                    showStatus("Đăng nhập thành công! Đang chuyển hướng...");
+                    setTimeout(() => window.location.href = "home.html", 800);
+                } else {
+                    showStatus("Không tìm thấy dữ liệu tài khoản trên hệ thống!", true);
+                }
             } catch (err) {
                 showStatus("Sai email hoặc mật khẩu!", true);
             }
@@ -500,7 +511,6 @@
                 const userCredential = await signInWithEmailAndPassword(auth, email, pass);
                 const user = userCredential.user;
 
-                // Kiểm tra vai trò trong Firestore
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
