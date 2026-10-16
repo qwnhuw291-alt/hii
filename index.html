@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOCZ - Login</title>
+    <title>VOCZ English - Đăng Nhập</title>
     <style>
         :root {
             --bg-main: #0f1117;
@@ -88,7 +88,7 @@
             align-items: center;
         }
 
-        /* LOGO DRAGON EMBLEM */
+        /* LOGO */
         .vocz-logo {
             display: flex;
             align-items: center;
@@ -289,7 +289,7 @@
         <!-- FORM ĐĂNG NHẬP HỌC VIÊN -->
         <form id="loginForm" class="form-section active" onsubmit="handleLogin(event)">
             <div class="form-group">
-                <label>Tên tài khoản (Email)</label>
+                <label>Email tài khoản</label>
                 <input type="email" id="loginEmail" required placeholder="choshuy123@gmail.com">
             </div>
             <div class="form-group">
@@ -302,35 +302,35 @@
         <!-- FORM ĐĂNG KÝ HỌC VIÊN -->
         <form id="registerForm" class="form-section" onsubmit="handleRegister(event)">
             <div class="form-group">
-                <label>Họ Tên</label>
-                <input type="text" id="regName" required placeholder="Ví dụ: Huy chos">
+                <label>Họ và Tên</label>
+                <input type="text" id="regName" required placeholder="Ví dụ: Nguyễn Văn A">
             </div>
             <div class="form-group">
                 <label>Email</label>
-                <input type="email" id="regEmail" required placeholder="Choshuy123@gmail.com">
+                <input type="email" id="regEmail" required placeholder="choshuy123@gmail.com">
             </div>
             <div class="form-group">
                 <label>Mật khẩu</label>
                 <input type="password" id="regPassword" required minlength="6" placeholder="Tối thiểu 6 ký tự">
             </div>
-            <button type="submit" class="submit-btn" id="regBtn">Đăng Ký</button>
+            <button type="submit" class="submit-btn" id="regBtn">Đăng Ký Tài Khoản</button>
         </form>
 
         <!-- FORM ĐĂNG NHẬP ADMIN -->
         <form id="adminForm" class="form-section admin-form" onsubmit="handleAdminLogin(event)">
             <div class="form-group">
                 <label>Email của Vua</label>
-                <input type="email" id="adminEmail" required placeholder="vuaTuan@gmail.com">
+                <input type="email" id="adminEmail" required placeholder="choshuy123@gmail.com">
             </div>
             <div class="form-group">
                 <label>Mật khẩu</label>
                 <input type="password" id="adminPassword" required placeholder="••••••••">
             </div>
             <div class="form-group">
-                <label>Mật khẩu bảo mật cấp 2</label>
+                <label>Mã bảo mật cấp 2</label>
                 <input type="password" id="adminSecretKey" required placeholder="••••••••">
             </div>
-            <button type="submit" class="submit-btn admin-btn" id="adminBtn">Đăng nhập Quản Trị</button>
+            <button type="submit" class="submit-btn admin-btn" id="adminBtn">Đăng nhập</button>
         </form>
 
         <div id="statusMsg" class="status-msg"></div>
@@ -353,7 +353,6 @@
             getDoc 
         } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-        // CẤU HÌNH FIREBASE CỦA BẠN
         const firebaseConfig = {
             apiKey: "AIzaSyB6d4Ss3lSChwgJJGEmcVG3wBQRPARMOg4",
             authDomain: "vocz-63be8.firebaseapp.com",
@@ -368,7 +367,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // MÃ KHÓA ADMIN NỘI BỘ DỰ PHÒNG
         const ADMIN_SECRET = "VOCZ_ADMIN_2026";
 
         // GIAO DIỆN SÁNG TỐI
@@ -408,7 +406,7 @@
             el.textContent = '';
         }
 
-        // 1. ĐĂNG KÝ HỌC VIÊN (Mặc định status: "pending" - Chờ duyệt)
+        // 1. ĐĂNG KÝ HỌC VIÊN
         window.handleRegister = async function(e) {
             e.preventDefault();
             clearStatus();
@@ -422,33 +420,41 @@
 
                 await updateProfile(user, { displayName: name });
 
-                // Khởi tạo hồ sơ ban đầu trên Firestore với trạng thái chờ duyệt
+                // Khởi tạo hồ sơ chuẩn theo home.html (không còn CP)
                 await setDoc(doc(db, "users", user.uid), {
                     uid: user.uid,
                     displayName: name,
                     email: email,
                     role: "student",
-                    status: "pending", // QUAN TRỌNG: Chờ admin duyệt mới cho vào
-                    vocab_cp: 0,
-                    lis_cp: 0,
-                    read_cp: 0,
-                    write_cp: 0,
-                    speak_cp: 0,
+                    status: "pending",
+                    best_lis: 0,
+                    best_read: 0,
+                    best_write: 0,
+                    best_speak: 0,
                     streak: 1,
                     lastCheckinDate: new Date(Date.now() - 7 * 3600 * 1000).toISOString().split('T')[0],
+                    masteredWords: [],
+                    readMails: [],
+                    words: [],
                     createdAt: new Date().toISOString()
                 });
 
-                // Đăng xuất ngay lập tức để học viên không vào được trang chính khi chưa duyệt
                 await signOut(auth);
-
-                showStatus("Đăng ký thành công! Tài khoản của bạn đang chờ Vua (Admin) phê duyệt.");
+                showStatus("Đăng ký thành công! Tài khoản đang chờ Vua viên phê duyệt.");
             } catch (err) {
-                showStatus(err.message, true);
+                if (err.code === 'auth/email-already-in-use') {
+                    showStatus("Email này đã được sử dụng! Vui lòng đăng nhập hoặc dùng email khác.", true);
+                } else if (err.code === 'auth/weak-password') {
+                    showStatus("Mật khẩu quá yếu! Vui lòng đặt từ 6 ký tự trở lên.", true);
+                } else if (err.code === 'auth/invalid-email') {
+                    showStatus("Định dạng email không hợp lệ!", true);
+                } else {
+                    showStatus(err.message, true);
+                }
             }
         };
 
-        // 2. ĐĂNG NHẬP HỌC VIÊN (Kiểm tra trạng thái duyệt)
+        // 2. ĐĂNG NHẬP HỌC VIÊN
         window.handleLogin = async function(e) {
             e.preventDefault();
             clearStatus();
@@ -459,42 +465,33 @@
                 const userCredential = await signInWithEmailAndPassword(auth, email, pass);
                 const user = userCredential.user;
 
-                // Lấy thông tin từ Firestore
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
 
-                    // KIỂM TRA TRẠNG THÁI: Nếu chưa được duyệt thì chặn lại
                     if (data.status !== "approved" && data.role !== "admin") {
                         await signOut(auth);
-                        showStatus("Tài khoản của bạn đang chờ Admin phê duyệt, chưa thể đăng nhập!", true);
+                        showStatus("Tài khoản của bạn đang chờ phê duyệt, chưa thể đăng nhập!", true);
                         return;
                     }
 
-                    // Lưu thông tin vào localStorage và chuyển vào home
-                    localStorage.setItem('vocz_uid', user.uid);
-                    localStorage.setItem('vocz_user_name', data.displayName || 'Võ Giả');
-                    localStorage.setItem('vocz_role', data.role || 'student');
-                    localStorage.setItem('vocz_vocab_cp', data.vocab_cp || 0);
-                    localStorage.setItem('vocz_lis_cp', data.lis_cp || 0);
-                    localStorage.setItem('vocz_read_cp', data.read_cp || 0);
-                    localStorage.setItem('vocz_write_cp', data.write_cp || 0);
-                    localStorage.setItem('vocz_speak_cp', data.speak_cp || 0);
-                    localStorage.setItem('vocz_streak', data.streak || 0);
-
                     showStatus("Đăng nhập thành công! Đang chuyển hướng...");
-                    setTimeout(() => window.location.href = "home.html", 800);
+                    setTimeout(() => window.location.href = "home.html", 600);
                 } else {
-                    showStatus("Không tìm thấy dữ liệu tài khoản trên hệ thống!", true);
+                    showStatus("Không tìm thấy thông tin tài khoản trên hệ thống!", true);
                 }
             } catch (err) {
-                showStatus("Sai email hoặc mật khẩu!", true);
+                if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+                    showStatus("Sai email hoặc mật khẩu!", true);
+                } else {
+                    showStatus(err.message, true);
+                }
             }
         };
 
-        // 3. ĐĂNG NHẬP QUẢN TRỊ VIÊN (ADMIN)
+        // 3. ĐĂNG NHẬP ADMIN
         window.handleAdminLogin = async function(e) {
             e.preventDefault();
             clearStatus();
@@ -503,7 +500,7 @@
             const secret = document.getElementById('adminSecretKey').value.trim();
 
             if (secret !== ADMIN_SECRET) {
-                showStatus("Mã khóa bảo mật Admin không chính xác!", true);
+                showStatus("Mã bảo mật  không chính xác!", true);
                 return;
             }
 
@@ -515,15 +512,13 @@
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists() && docSnap.data().role === 'admin') {
-                    localStorage.setItem('vocz_uid', user.uid);
-                    localStorage.setItem('vocz_role', 'admin');
-                    showStatus("Xác thực Quản Trị Viên thành công! Đang vào trang quản trị...");
-                    setTimeout(() => window.location.href = "admin.html", 800);
+                    showStatus("Xác thực thành công! Đang vào trang của Vua...");
+                    setTimeout(() => window.location.href = "admin.html", 600);
                 } else {
-                    showStatus("Tài khoản này không có thẩm quyền Quản Trị!", true);
+                    showStatus("Tài khoản này không có quyền của Vua!", true);
                 }
             } catch (err) {
-                showStatus("Thông tin đăng nhập Admin không hợp lệ!", true);
+                showStatus("Thông tin đăng nhập của Vua không hợp lệ!", true);
             }
         };
     </script>
