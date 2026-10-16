@@ -542,7 +542,7 @@
                     <div class="card wide" id="cardToUser">
                         <div>
                             <h2>Cảnh Giới &amp; Hồ Sơ</h2>
-                            <p>Đột phá tu vi và xem chi tiết điểm số.</p>
+                            <p>Đột phá cp và xem chi tiết điểm số.</p>
                         </div>
                         <div class="art">
                             <span style="font-size: 2.4rem;">🥋</span>
@@ -631,7 +631,7 @@
         <!-- ================= VIEW 3: HỒ SƠ & CẢNH GIỚI ================= -->
         <section id="viewUser" hidden>
             <div class="flex justify-between items-center mb-6">
-                <h1 class="text-2xl font-black">Hồ Sơ Đột Phá</h1>
+                <h1 class="text-2xl font-black">Hồ Sơ</h1>
                 <div class="flex items-center gap-3">
                     <button type="button" class="btn text-rose-500 border-rose-500/40 hover:bg-rose-500/10" id="logoutBtn">Đăng Xuất</button>
                     <button type="button" class="btn" id="userBackHome">← Về Trang Chủ</button>
@@ -700,7 +700,7 @@
     </dialog>
 
     <dialog id="dailyDialog">
-        <h2>Điểm Danh Tu Luyện</h2>
+        <h2>Điểm Danh</h2>
         <p class="text-sm text-slate-400 mb-4">Mốc ngày mới tính lúc <b>07:00 Sáng</b> mỗi ngày. Hãy duy trì chuỗi để nhận thưởng Lực Chiến!</p>
         <div class="p-4 bg-slate-900 rounded-2xl border border-slate-800 text-center mb-4">
             <div class="text-xs text-slate-400 uppercase font-semibold">Chuỗi Điểm Danh</div>
@@ -763,7 +763,7 @@
         /* ---------- HẰNG SỐ & BIẾN TRẠNG THÁI TOÀN CỤC ---------- */
         let currentUser = null;
         let userData = {
-            displayName: "Người chơi VOCZ",
+            displayName: "NONAME",
             avatar: "VOCZ1",
             role: "student",
             status: "approved",
@@ -784,20 +784,20 @@
         const CP_PER_WORD = 10;
         const SEEDS = ['VOCZ1', 'VOCZ2', 'VOCZ3', 'VOCZ4', 'VOCZ5'];
         const REALMS = [
-            { min: 0, name: 'Phàm Nhân' },
-            { min: 100, name: 'Luyện Khí Kỳ' },
-            { min: 500, name: 'Trúc Cơ Kỳ' },
-            { min: 1500, name: 'Kim Đan Kỳ' },
-            { min: 4000, name: 'Nguyên Anh Kỳ' },
-            { min: 10000, name: 'Hóa Thần Kỳ' }
+            { min: 0, name: 'Newbie' },
+            { min: 100, name: 'Cũng cũng' },
+            { min: 500, name: 'Hảo hán' },
+            { min: 6500, name: 'Hào kiệt' },
+            { min: 8000, name: 'Đại hào kiệt' },
+            { min: 10000, name: 'Vua' }
         ];
 
         /* ---------- HÒM THƯ HỆ THỐNG MẪU ---------- */
         const DEFAULT_MAILS = [
             {
                 id: 'm1',
-                title: 'Chào mừng đến với VOCZ',
-                body: 'Chào mừng bạn đã gia nhập thế giới VOCZ Gaming English!\nHãy chăm chỉ luyện từ vựng, nghe nói đọc viết mỗi ngày để đột phá cảnh giới và leo rank bảng xếp hạng nhé.',
+                title: 'Chào mừng đến với web của tui',
+                body: 'Đôi lời gửi gắm!\nCái này còn nhiều lỗi á, có j góp ý giúp tui nha.',
                 giftCP: 50
             }
         ];
