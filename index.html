@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Nhập</title>
+    <title>VOCZ - Login</title>
     <style>
         :root {
             --bg-main: #0f1117;
@@ -12,31 +12,44 @@
             --text-muted: #94a3b8;
             --accent-start: #ff3b5c;
             --accent-end: #e60033;
+            --accent-glow: rgba(255, 59, 92, 0.35);
             --border-color: #2a2f3d;
             --input-bg: #141720;
+            --admin-accent: #f59e0b;
+            --admin-glow: rgba(245, 158, 11, 0.3);
         }
 
-        .light-mode {
+        body.light-mode {
             --bg-main: #f8fafc;
             --card-bg: #ffffff;
             --text-main: #0f172a;
             --text-muted: #64748b;
             --accent-start: #dc2626;
             --accent-end: #b91c1c;
+            --accent-glow: rgba(220, 38, 38, 0.2);
             --border-color: #e2e8f0;
             --input-bg: #f1f5f9;
+            --admin-accent: #d97706;
+            --admin-glow: rgba(217, 119, 6, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, sans-serif;
         }
 
         body {
             background-color: var(--bg-main);
             color: var(--text-main);
-            font-family: system-ui, -apple-system, sans-serif;
-            margin: 0;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            padding: 20px;
             transition: background-color 0.3s, color 0.3s;
+            position: relative;
         }
 
         .theme-toggle {
@@ -54,146 +67,455 @@
             align-items: center;
             justify-content: center;
             font-size: 1.2rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             transition: transform 0.2s;
         }
 
         .theme-toggle:hover {
-            transform: scale(1.05);
+            transform: scale(1.08);
         }
 
-        .login-card {
+        .auth-container {
+            width: 100%;
+            max-width: 440px;
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
-            padding: 2.5rem 2rem;
-            border-radius: 1rem;
-            width: 100%;
-            max-width: 380px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            box-sizing: border-box;
-            transition: background-color 0.3s, border-color 0.3s;
+            border-radius: 20px;
+            padding: 2.2rem 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        h1 {
-            margin-top: 0;
-            font-size: 1.5rem;
-            text-align: center;
+        /* LOGO DRAGON EMBLEM */
+        .vocz-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,59,92,0.08));
+            padding: 10px 22px;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.8rem;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s;
+        }
+
+        .vocz-logo:hover {
+            transform: scale(1.06);
+            filter: drop-shadow(0 0 16px var(--accent-glow));
+        }
+
+        .dragon-emblem {
+            width: 42px;
+            height: 42px;
+            animation: floatDragon 3s ease-in-out infinite;
+        }
+
+        .brand-name {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: var(--text-main);
+        }
+
+        .brand-name span {
+            color: var(--accent-start);
+        }
+
+        @keyframes floatDragon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        /* TAB NAVIGATION */
+        .auth-tabs {
+            display: flex;
+            width: 100%;
+            background-color: var(--input-bg);
+            border-radius: 12px;
+            padding: 4px;
             margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 0;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .tab-btn.active {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .tab-btn.admin-tab.active {
+            color: var(--admin-accent);
+        }
+
+        /* FORMS */
+        .form-section {
+            display: none;
+            width: 100%;
+        }
+
+        .form-section.active {
+            display: block;
         }
 
         .form-group {
-            margin-bottom: 1.25rem;
+            margin-bottom: 1.1rem;
         }
 
         label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.82rem;
             color: var(--text-muted);
-            font-weight: 500;
+            font-weight: 600;
         }
 
         input {
             width: 100%;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid var(--border-color);
+            padding: 0.8rem 1rem;
             background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
             color: var(--text-main);
-            box-sizing: border-box;
-            font-size: 1rem;
-            transition: border-color 0.2s;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         input:focus {
-            outline: none;
             border-color: var(--accent-start);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .admin-form input:focus {
+            border-color: var(--admin-accent);
+            box-shadow: 0 0 10px var(--admin-glow);
         }
 
         .submit-btn {
             width: 100%;
-            padding: 0.75rem;
+            padding: 0.85rem;
             border: none;
-            border-radius: 0.5rem;
+            border-radius: 10px;
             background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
             color: white;
-            font-size: 1rem;
-            font-weight: bold;
+            font-size: 0.95rem;
+            font-weight: 700;
             cursor: pointer;
             margin-top: 0.5rem;
             transition: opacity 0.2s, transform 0.1s;
         }
 
         .submit-btn:hover {
-            opacity: 0.9;
+            opacity: 0.92;
         }
 
         .submit-btn:active {
             transform: scale(0.98);
         }
 
-        .error-msg {
-            color: #ef4444;
-            font-size: 0.875rem;
-            text-align: center;
+        .admin-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .status-msg {
             margin-top: 1rem;
+            font-size: 0.85rem;
+            text-align: center;
+            min-height: 20px;
             display: none;
         }
 
-        .hint {
-            text-align: center;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 1.5rem;
+        .status-msg.error {
+            display: block;
+            color: #ef4444;
+        }
+
+        .status-msg.success {
+            display: block;
+            color: #10b981;
         }
     </style>
 </head>
 <body>
 
-    <button class="theme-toggle" id="themeToggleBtn" onclick="toggleTheme()" title="Đổi giao diện">🌙</button>
+    <button class="theme-toggle" id="themeBtn" title="Chuyển chế độ">🌙</button>
 
-    <div class="login-card">
-        <h1>Đăng nhập để tiếp tục</h1>
-        <form id="loginForm" onsubmit="handleLogin(event)">
+    <div class="auth-container">
+        <!-- LOGO VOCZ -->
+        <div class="vocz-logo">
+            <svg class="dragon-emblem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="whiteDragon" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff"/>
+                        <stop offset="50%" stop-color="#e2e8f0"/>
+                        <stop offset="100%" stop-color="#94a3b8"/>
+                    </linearGradient>
+                    <linearGradient id="glowRed" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#ff3b5c"/>
+                        <stop offset="100%" stop-color="#e60033"/>
+                    </linearGradient>
+                </defs>
+                <path d="M50 15 L65 35 L85 25 L75 50 L95 65 L70 70 L65 90 L50 75 L35 90 L30 70 L5 65 L25 50 L15 25 L35 35 Z" fill="url(#whiteDragon)" opacity="0.15"/>
+                <path d="M50 10 C45 20 35 25 25 20 C35 35 45 40 48 55 C40 55 30 50 20 60 C35 65 45 65 50 85 C55 65 65 65 80 60 C70 50 60 55 52 55 C55 40 65 35 75 20 C65 25 55 20 50 10 Z" fill="url(#whiteDragon)"/>
+                <circle cx="43" cy="28" r="3" fill="url(#glowRed)"/>
+                <circle cx="57" cy="28" r="3" fill="url(#glowRed)"/>
+            </svg>
+            <div class="brand-name">VOC<span>Z</span></div>
+        </div>
+
+        <!-- TABS -->
+        <div class="auth-tabs">
+            <button class="tab-btn active" onclick="switchTab('login')">Đăng Nhập</button>
+            <button class="tab-btn" onclick="switchTab('register')">Đăng Ký</button>
+            <button class="tab-btn admin-tab" onclick="switchTab('admin')">Vua</button>
+        </div>
+
+        <!-- FORM ĐĂNG NHẬP HỌC VIÊN -->
+        <form id="loginForm" class="form-section active" onsubmit="handleLogin(event)">
             <div class="form-group">
-                <label for="username">Tài khoản</label>
-                <input type="text" id="username" required placeholder="Nhập tài khoản...">
+                <label>Tên tài khoản</label>
+                <input type="email" id="loginEmail" required placeholder="choshuy123@gmail.com">
             </div>
             <div class="form-group">
-                <label for="password">Mật khẩu</label>
-                <input type="password" id="password" required placeholder="Nhập mật khẩu...">
+                <label>Mật khẩu</label>
+                <input type="password" id="loginPassword" required placeholder="••••••••">
             </div>
-            <button type="submit" class="submit-btn">Đăng nhập</button>
-            <div id="errorMsg" class="error-msg">Sai tài khoản hoặc mật khẩu!</div>
+            <button type="submit" class="submit-btn" id="loginBtn">Đăng nhập</button>
         </form>
-        <div class="hint">nhìn cái j mà nhìn?</div>
+
+        <!-- FORM ĐĂNG KÝ HỌC VIÊN -->
+        <form id="registerForm" class="form-section" onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label>Họ Tên</label>
+                <input type="text" id="regName" required placeholder="Ví dụ: Huy chos">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="regEmail" required placeholder="Choshuy123@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>Mật khẩu</label>
+                <input type="password" id="regPassword" required minlength="6" placeholder="Tối thiểu 6 ký tự">
+            </div>
+            <button type="submit" class="submit-btn" id="regBtn">Đăng Ký</button>
+        </form>
+
+        <!-- FORM ĐĂNG NHẬP ADMIN -->
+        <form id="adminForm" class="form-section admin-form" onsubmit="handleAdminLogin(event)">
+            <div class="form-group">
+                <label>Email của Vua</label>
+                <input type="email" id="adminEmail" required placeholder="vuaTuan@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>Mật khẩu</label>
+                <input type="password" id="adminPassword" required placeholder="••••••••">
+            </div>
+            <div class="form-group">
+                <label>Mật khẩu 2</label>
+                <input type="password" id="adminSecretKey" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="submit-btn admin-btn" id="adminBtn">Đăng nhập</button>
+        </form>
+
+        <div id="statusMsg" class="status-msg"></div>
     </div>
 
-    <script>
-        function toggleTheme() {
-            const body = document.body;
-            const btn = document.getElementById('themeToggleBtn');
-            body.classList.toggle('light-mode');
-            if (body.classList.contains('light-mode')) {
-                btn.textContent = '☀️';
-            } else {
-                btn.textContent = '🌙';
+    <!-- FIREBASE SDK MODULAR (v10) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            updateProfile 
+        } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            getDoc 
+        } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        // CẤU HÌNH FIREBASE
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // MÃ KHÓA ADMIN NỘI BỘ DỰ PHÒNG
+        const ADMIN_SECRET = "VOCZ_ADMIN_2026";
+
+        // GIAO DIỆN SÁNG TỐI
+        const themeBtn = document.getElementById('themeBtn');
+        themeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            themeBtn.textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
+        });
+
+        // CHUYỂN TAB
+        window.switchTab = function(type) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.form-section').forEach(form => form.classList.remove('active'));
+            clearStatus();
+
+            if (type === 'login') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else if (type === 'register') {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+            } else if (type === 'admin') {
+                document.querySelectorAll('.tab-btn')[2].classList.add('active');
+                document.getElementById('adminForm').classList.add('active');
             }
+        };
+
+        function showStatus(text, isError = false) {
+            const el = document.getElementById('statusMsg');
+            el.className = `status-msg ${isError ? 'error' : 'success'}`;
+            el.textContent = text;
         }
 
-        function handleLogin(event) {
-            event.preventDefault();
-            const user = document.getElementById('username').value.trim();
-            const pass = document.getElementById('password').value.trim();
-
-            if (user === '12367' && pass === '12367') {
-                localStorage.setItem('isLoggedIn', 'true');
-                window.location.href = 'home.html';
-            } else {
-                const errorEl = document.getElementById('errorMsg');
-                errorEl.style.display = 'block';
-            }
+        function clearStatus() {
+            const el = document.getElementById('statusMsg');
+            el.className = 'status-msg';
+            el.textContent = '';
         }
+
+        // 1. ĐĂNG KÝ HỌC VIÊN
+        window.handleRegister = async function(e) {
+            e.preventDefault();
+            clearStatus();
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const pass = document.getElementById('regPassword').value;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+                const user = userCredential.user;
+
+                await updateProfile(user, { displayName: name });
+
+                // Khởi tạo hồ sơ ban đầu trên Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    displayName: name,
+                    email: email,
+                    role: "student",
+                    vocab_cp: 0,
+                    lis_cp: 0,
+                    read_cp: 0,
+                    write_cp: 0,
+                    speak_cp: 0,
+                    streak: 1,
+                    lastCheckinDate: new Date(Date.now() - 7 * 3600 * 1000).toISOString().split('T')[0],
+                    createdAt: new Date().toISOString()
+                });
+
+                // Đồng bộ localStorage cho web VOCZ
+                localStorage.setItem('vocz_uid', user.uid);
+                localStorage.setItem('vocz_user_name', name);
+                localStorage.setItem('vocz_role', 'student');
+
+                showStatus("Khởi tạo thành công! Đang tiến vào tông môn...");
+                setTimeout(() => window.location.href = "home.html", 1000);
+            } catch (err) {
+                showStatus(err.message, true);
+            }
+        };
+
+        // 2. ĐĂNG NHẬP HỌC VIÊN
+        window.handleLogin = async function(e) {
+            e.preventDefault();
+            clearStatus();
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPassword').value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+                const user = userCredential.user;
+
+                // Lấy thông tin chỉ số từ Firestore nạp vào LocalStorage
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    localStorage.setItem('vocz_uid', user.uid);
+                    localStorage.setItem('vocz_user_name', data.displayName || 'Võ Giả');
+                    localStorage.setItem('vocz_role', data.role || 'student');
+                    localStorage.setItem('vocz_vocab_cp', data.vocab_cp || 0);
+                    localStorage.setItem('vocz_lis_cp', data.lis_cp || 0);
+                    localStorage.setItem('vocz_read_cp', data.read_cp || 0);
+                    localStorage.setItem('vocz_write_cp', data.write_cp || 0);
+                    localStorage.setItem('vocz_speak_cp', data.speak_cp || 0);
+                    localStorage.setItem('vocz_streak', data.streak || 0);
+                }
+
+                showStatus("Đăng nhập thành công! Đang chuyển hướng...");
+                setTimeout(() => window.location.href = "home.html", 800);
+            } catch (err) {
+                showStatus("Sai email hoặc mật khẩu!", true);
+            }
+        };
+
+        // 3. ĐĂNG NHẬP QUẢN TRỊ VIÊN (ADMIN)
+        window.handleAdminLogin = async function(e) {
+            e.preventDefault();
+            clearStatus();
+            const email = document.getElementById('adminEmail').value.trim();
+            const pass = document.getElementById('adminPassword').value;
+            const secret = document.getElementById('adminSecretKey').value.trim();
+
+            if (secret !== ADMIN_SECRET) {
+                showStatus("Mã khóa bảo mật Admin không chính xác!", true);
+                return;
+            }
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+                const user = userCredential.user;
+
+                // Kiểm tra vai trò trong Firestore
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists() && docSnap.data().role === 'admin') {
+                    localStorage.setItem('vocz_uid', user.uid);
+                    localStorage.setItem('vocz_role', 'admin');
+                    showStatus("Xác thực Quản Trị Viên thành công! Đang vào trang quản trị...");
+                    setTimeout(() => window.location.href = "admin.html", 800);
+                } else {
+                    showStatus("Tài khoản này không có thẩm quyền Quản Trị!", true);
+                }
+            } catch (err) {
+                showStatus("Thông tin đăng nhập Admin không hợp lệ!", true);
+            }
+        };
     </script>
 </body>
 </html>
