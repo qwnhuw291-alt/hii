@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>VOCZ English - Bảng Quản Trị</title>
+    
+    <script>
+        try {
+            var t = localStorage.getItem('vocz-theme');
+            if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root, :root[data-theme="dark"] {
+            --bg: #0f1117;
+            --card: #1a1d26;
+            --card-deep: #141720;
+            --border: #2a2f3d;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --admin-accent: #f59e0b;
+            --admin-deep: #d97706;
+            --admin-soft: rgba(245, 158, 11, 0.14);
+            --admin-glow: rgba(245, 158, 11, 0.28);
+            --ok: #5fb985;
+            --bad: #e0554f;
+            --shadow: rgba(0, 0, 0, 0.45);
+            color-scheme: dark;
+        }
+
+        :root[data-theme="light"] {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --card-deep: #f1f5f9;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --muted: #64748b;
+            --admin-accent: #d97706;
+            --admin-deep: #b45309;
+            --admin-soft: rgba(217, 119, 6, 0.12);
+            --admin-glow: rgba(217, 119, 6, 0.2);
+            --ok: #1f8a52;
+            --bad: #c93a34;
+            --shadow: rgba(15, 23, 42, 0.12);
+            color-scheme: light;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            line-height: 1.5;
+            transition: background-color .3s ease, color .3s ease;
+        }
+
+        :focus-visible { outline: 2px solid var(--admin-accent); outline-offset: 2px; }
+        [hidden] { display: none !important; }
+
+        .topbar {
+            position: sticky; top: 0; z-index: 50;
+            height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 clamp(16px, 4vw, 36px);
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 8px 16px; border-radius: 10px; border: 1px solid var(--border);
+            background: var(--card); color: var(--text); font-size: .88rem; font-weight: 600;
+            cursor: pointer; transition: all .15s ease;
+        }
+        .btn:hover { border-color: var(--admin-accent); }
+        .btn-admin { background: var(--admin-accent); border-color: var(--admin-accent); color: #000; font-weight: 700; }
+        .btn-admin:hover { background: var(--admin-deep); border-color: var(--admin-deep); color: #fff; }
+        .btn-ok { background: var(--ok); border-color: var(--ok); color: #fff; }
+        .btn-bad { background: var(--bad); border-color: var(--bad); color: #fff; }
+
+        .stat-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 20px;
+        }
+        .stat-card .val {
+            font-size: 2.2rem; font-weight: 800; line-height: 1.1;
+            color: var(--admin-accent); margin-top: 6px;
+        }
+
+        .table-box {
+            overflow-x: auto; border: 1px solid var(--border);
+            border-radius: 16px; background: var(--card);
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 720px; text-align: left; }
+        th {
+            padding: 14px 16px; font-size: .8rem; font-weight: 700;
+            color: var(--muted); border-bottom: 1px solid var(--border);
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: .92rem; }
+        tr:last-child td { border-bottom: 0; }
+
+        .badge {
+            display: inline-flex; align-items: center; padding: 2px 10px;
+            border-radius: 999px; font-size: .78rem; font-weight: 700;
+        }
+        .badge-pending { background: rgba(245, 158, 11, 0.16); color: var(--admin-accent); border: 1px solid var(--admin-accent); }
+        .badge-approved { background: rgba(95, 185, 133, 0.16); color: var(--ok); border: 1px solid var(--ok); }
+
+        dialog {
+            width: min(92vw, 480px); margin: auto; padding: 24px;
+            border-radius: 20px; border: 1px solid var(--border);
+            background: var(--card); color: var(--text); box-shadow: 0 20px 50px var(--shadow);
+        }
+        dialog::backdrop { background: rgba(0, 0, 0, .6); backdrop-filter: blur(4px); }
+
+        #loader {
+            position: fixed; inset: 0; z-index: 100;
+            background: var(--bg); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Màn hình chờ xác thực Admin -->
+    <div id="loader">
+        <span class="text-3xl animate-bounce">⚡</span>
+        <p class="text-sm font-semibold text-slate-400">Đang xác thực quyền Quản Trị Viên...</p>
+    </div>
+
+    <!-- HEADER TOPBAR -->
+    <header class="topbar">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl text-amber-500">🛡️</span>
+            <div>
+                <h1 class="text-lg font-black tracking-wide leading-none">VOCZ <span class="text-amber-500">ADMIN</span></h1>
+                <span class="text-xs text-slate-400 font-medium">Bảng Điều Khiển Hệ Thống</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3">
+            <button class="btn" id="themeBtn" type="button" title="Đổi giao diện">🌙</button>
+            <a href="home.html" class="btn" title="Xem giao diện học viên">Trang Chủ</a>
+            <button class="btn btn-bad" id="logoutBtn" type="button">Đăng Xuất</button>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        
+        <!-- THỐNG KÊ TỔNG QUAN -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="stat-card">
+                <span class="text-xs font-bold text-slate-400 uppercase">Tổng Học Viên</span>
+                <div class="val" id="stTotalUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <span class="text-xs font-bold text-slate-400 uppercase">Chờ Phê Duyệt</span>
+                <div class="val text-amber-500" id="stPendingUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <span class="text-xs font-bold text-slate-400 uppercase">Streak Kỷ Lục</span>
+                <div class="val text-rose-500" id="stTopStreak">0 🔥</div>
+            </div>
+            <div class="stat-card">
+                <span class="text-xs font-bold text-slate-400 uppercase">Tổng Từ Vựng Nhóm</span>
+                <div class="val text-emerald-400" id="stGroupWords">0</div>
+            </div>
+        </section>
+
+        <!-- KHỐI 1: DANH SÁCH CHỜ DUYỆT (PENDING) -->
+        <section class="mb-10" id="pendingSection" hidden>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold flex items-center gap-2">
+                    <span>⏳</span> Học viên chờ phê duyệt (<span id="pendingCount">0</span>)
+                </h2>
+            </div>
+            <div class="table-box">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Họ và Tên</th>
+                            <th>Email</th>
+                            <th>Ngày Đăng Ký</th>
+                            <th class="text-center">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendingTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- KHỐI 2: QUẢN LÝ THÀNH VIÊN CHÍNH THỨC -->
+        <section class="mb-10">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <h2 class="text-lg font-bold flex items-center gap-2">
+                    <span>👥</span> Danh Sách Thành Viên Chính Thức
+                </h2>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="searchInput" placeholder="Tìm theo tên/email..." class="px-3 py-1.5 text-sm bg-slate-900 border border-slate-700 rounded-lg outline-none focus:border-amber-500 w-60">
+                    <button class="btn btn-admin" id="openNoticeBtn" type="button">+ Gửi Thông Báo</button>
+                </div>
+            </div>
+
+            <div class="table-box">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Thành Viên</th>
+                            <th>Email</th>
+                            <th class="text-center">Chuỗi Streak</th>
+                            <th class="text-center">Sổ Từ (Đã thuộc)</th>
+                            <th class="text-center">Điểm (L/R/W/S)</th>
+                            <th class="text-center">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="membersTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: GỬI THÔNG BÁO CHO HỌC VIÊN -->
+    <dialog id="noticeModal">
+        <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-amber-500">
+            <span>📢</span> Phát Thông Báo Toàn Hệ Thống
+        </h3>
+        <div class="mb-4">
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Tiêu đề thông báo</label>
+            <input type="text" id="nTitle" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-amber-500" placeholder="e.g. Kiểm tra từ vựng tuần này">
+        </div>
+        <div class="mb-5">
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Nội dung chi tiết</label>
+            <textarea id="nBody" rows="4" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-amber-500" placeholder="Nhập nội dung nhắc nhở các bạn..."></textarea>
+        </div>
+        <div class="flex gap-2">
+            <button class="btn flex-1" type="button" id="closeNoticeModal">Hủy</button>
+            <button class="btn btn-admin flex-1" type="button" id="sendNoticeBtn">Gửi Đi</button>
+        </div>
+    </dialog>
+
+    <!-- MODAL: CHỈNH SỬA ĐIỂM / STREAK CỦA HỌC VIÊN -->
+    <dialog id="editUserModal">
+        <h3 class="text-lg font-bold mb-3 flex items-center gap-2 text-amber-500">
+            <span>✏️</span> Chỉnh Sửa Thông Tin Học Viên
+        </h3>
+        <p class="text-xs text-slate-400 mb-4" id="editUserNameDisplay"></p>
+        
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Chuỗi Streak</label>
+                <input type="number" id="editStreak" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-amber-500">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Điểm Nghe (Best)</label>
+                <input type="number" id="editLis" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-amber-500">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Điểm Đọc (Best)</label>
+                <input type="number" id="editRead" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-amber-500">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1">Điểm Viết (Best)</label>
+                <input type="number" id="editWrite" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-amber-500">
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <button class="btn flex-1" type="button" id="closeEditModal">Hủy</button>
+            <button class="btn btn-admin flex-1" type="button" id="saveUserEditBtn">Lưu Thay Đổi</button>
+        </div>
+    </dialog>
+
+    <!-- FIREBASE SDK V10 & LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            doc, 
+            getDoc, 
+            getDocs, 
+            updateDoc, 
+            deleteDoc,
+            addDoc
+        } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        // CẤU HÌNH FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyB6d4Ss3lSChwgJJGEmcVG3wBQRPARMOg4",
+            authDomain: "vocz-63be8.firebaseapp.com",
+            projectId: "vocz-63be8",
+            storageBucket: "vocz-63be8.firebasestorage.app",
+            messagingSenderId: "204455509635",
+            appId: "1:204455509635:web:a8dd1dd3b4e0f60fb125b6",
+            measurementId: "G-G0Q1PRGD8T"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const $ = id => document.getElementById(id);
+        const root = document.documentElement;
+
+        let allUsers = [];
+        let selectedUserId = null;
+
+        /* ---------- GIAO DIỆN SÁNG TỐI ---------- */
+        const themeBtn = $('themeBtn');
+        function applyTheme(t) {
+            root.setAttribute('data-theme', t);
+            themeBtn.textContent = t === 'dark' ? '☀️' : '🌙';
+        }
+        applyTheme(root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+        themeBtn.addEventListener('click', () => {
+            const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+            try { localStorage.setItem('vocz-theme', next); } catch (e) {}
+        });
+
+        /* ---------- AUTH GUARD CHO ADMIN ---------- */
+        onAuthStateChanged(auth, async user => {
+            if (!user) {
+                location.replace("index.html");
+                return;
+            }
+
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (!userDoc.exists() || userDoc.data().role !== 'admin') {
+                    alert("Bạn không có quyền truy cập vào trang Quản Trị!");
+                    await signOut(auth);
+                    location.replace("index.html");
+                    return;
+                }
+
+                // Tải danh sách người dùng khi xác thực thành công
+                await loadAllUsers();
+                $('loader').style.display = 'none';
+
+            } catch (err) {
+                console.error("Lỗi xác thực:", err);
+                location.replace("index.html");
+            }
+        });
+
+        $('logoutBtn').addEventListener('click', async () => {
+            await signOut(auth);
+            localStorage.clear();
+            location.replace("index.html");
+        });
+
+        /* ---------- TẢI VÀ RENDER DỮ LIỆU THÀNH VIÊN ---------- */
+        async function loadAllUsers() {
+            try {
+                const querySnap = await getDocs(collection(db, "users"));
+                allUsers = [];
+                querySnap.forEach(d => {
+                    allUsers.push({ id: d.id, ...d.data() });
+                });
+                renderOverview();
+                renderPendingList();
+                renderMembersList();
+            } catch (err) {
+                console.error("Lỗi tải users:", err);
+            }
+        }
+
+        function renderOverview() {
+            const approved = allUsers.filter(u => u.status === 'approved');
+            const pending = allUsers.filter(u => u.status === 'pending');
+            
+            $('stTotalUsers').textContent = approved.length;
+            $('stPendingUsers').textContent = pending.length;
+
+            let maxStreak = 0;
+            let totalWords = 0;
+
+            approved.forEach(u => {
+                if ((u.streak || 0) > maxStreak) maxStreak = u.streak;
+                if (Array.isArray(u.words)) totalWords += u.words.length;
+            });
+
+            $('stTopStreak').textContent = `${maxStreak} 🔥`;
+            $('stGroupWords').textContent = totalWords.toLocaleString('vi-VN');
+        }
+
+        /* ---------- 1. DANH SÁCH CHỜ DUYỆT ---------- */
+        function renderPendingList() {
+            const pending = allUsers.filter(u => u.status === 'pending');
+            const tbody = $('pendingTableBody');
+            tbody.innerHTML = '';
+
+            $('pendingSection').hidden = (pending.length === 0);$('pendingCount').textContent = pending.length;
+
+            pending.forEach(u => {
+                const tr = document.createElement('tr');
+                const dateStr = u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : 'Mới';
+
+                tr.innerHTML = `
+                    <td class="font-bold">${u.displayName || 'Chưa đặt tên'}</td>
+                    <td class="text-slate-400">${u.email}</td>
+                    <td class="text-sm text-slate-400">${dateStr}</td>
+                    <td class="text-center">
+                        <button class="btn btn-ok text-xs mr-2" data-id="${u.id}" data-action="approve">✓ Duyệt</button>
+                        <button class="btn btn-bad text-xs" data-id="${u.id}" data-action="reject">✕ Từ chối</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            tbody.querySelectorAll('button').forEach(btn => {
+                btn.onclick = async () => {
+                    const uid = btn.dataset.id;
+                    const action = btn.dataset.action;
+
+                    if (action === 'approve') {
+                        await updateDoc(doc(db, "users", uid), { status: "approved" });
+                        alert("Đã duyệt thành công học viên!");
+                    } else if (action === 'reject') {
+                        if (confirm("Bạn có chắc chắn muốn từ chối và xóa tài khoản này?")) {
+                            await deleteDoc(doc(db, "users", uid));
+                        }
+                    }
+                    await loadAllUsers();
+                };
+            });
+        }
+
+        /* ---------- 2. DANH SÁCH THÀNH VIÊN CHÍNH THỨC ---------- */
+        function renderMembersList() {
+            const keyword = $('searchInput').value.trim().toLowerCase();
+            const approved = allUsers.filter(u => u.status === 'approved' && u.role !== 'admin')
+                .filter(u => (u.displayName || '').toLowerCase().includes(keyword) || (u.email || '').toLowerCase().includes(keyword));
+
+            const tbody = $('membersTableBody');
+            tbody.innerHTML = '';
+
+            if (approved.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-slate-400 py-6">Không tìm thấy thành viên phù hợp</td></tr>`;
+                return;
+            }
+
+            approved.forEach(u => {
+                const tr = document.createElement('tr');
+                const wordsCount = Array.isArray(u.words) ? u.words.length : 0;
+                const masteredCount = Array.isArray(u.masteredWords) ? u.masteredWords.length : 0;
+                const scores = `${u.best_lis || 0}/${u.best_read || 0}/${u.best_write || 0}/${u.best_speak || 0}`;
+
+                tr.innerHTML = `
+                    <td class="font-bold">${u.displayName || 'Học viên'}</td>
+                    <td class="text-slate-400">${u.email}</td>
+                    <td class="text-center font-bold text-rose-500">${u.streak || 0} 🔥</td>
+                    <td class="text-center">${wordsCount} <span class="text-xs text-slate-400">(${masteredCount})</span></td>
+                    <td class="text-center font-mono text-sm">${scores}</td>
+                    <td class="text-center">
+                        <button class="btn text-xs mr-1" data-id="${u.id}" data-action="edit">Sửa điểm</button>
+                        <button class="btn btn-bad text-xs" data-id="${u.id}" data-action="delete">Xóa</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            tbody.querySelectorAll('button').forEach(btn => {
+                btn.onclick = async () => {
+                    const uid = btn.dataset.id;
+                    const action = btn.dataset.action;
+
+                    if (action === 'edit') {
+                        openEditModal(uid);
+                    } else if (action === 'delete') {
+                        if (confirm("Cảnh báo: Bạn có chắc chắn muốn xóa học viên này khỏi hệ thống?")) {
+                            await deleteDoc(doc(db, "users", uid));
+                            await loadAllUsers();
+                        }
+                    }
+                };
+            });
+        }
+
+        $('searchInput').addEventListener('input', renderMembersList);
+
+        /* ---------- 3. SỬA ĐIỂM HỌC VIÊN ---------- */
+        function openEditModal(uid) {
+            selectedUserId = uid;
+            const u = allUsers.find(x => x.id === uid);
+            if (!u) return;
+
+            $('editUserNameDisplay').textContent = `${u.displayName} (${u.email})`;
+            $('editStreak').value = u.streak || 0;
+            $('editLis').value = u.best_lis || 0;
+            $('editRead').value = u.best_read || 0;
+            $('editWrite').value = u.best_write || 0;
+
+            $('editUserModal').showModal();
+        }
+
+        $('closeEditModal').onclick = () =>$('editUserModal').close();
+
+        $('saveUserEditBtn').onclick = async () => {
+            if (!selectedUserId) return;
+            const updateData = {
+                streak: Number($('editStreak').value) || 0,
+                best_lis: Number($('editLis').value) || 0,
+                best_read: Number($('editRead').value) || 0,
+                best_write: Number($('editWrite').value) || 0
+            };
+
+            await updateDoc(doc(db, "users", selectedUserId), updateData);
+            $('editUserModal').close();
+            await loadAllUsers();
+            alert("Đã cập nhật thông tin học viên thành công!");
+        };
+
+        /* ---------- 4. GỬI THÔNG BÁO CHO CẢ NHÓM ---------- */
+        $('openNoticeBtn').onclick = () => {$('nTitle').value = '';
+            $('nBody').value = '';$('noticeModal').showModal();
+        };
+
+        $('closeNoticeModal').onclick = () =>$('noticeModal').close();
+
+        $('sendNoticeBtn').onclick = async () => {
+            const title = $('nTitle').value.trim();
+            const body = $('nBody').value.trim();
+
+            if (!title || !body) {
+                alert("Vui lòng điền đủ tiêu đề và nội dung thông báo!");
+                return;
+            }
+
+            try {
+                // Lưu thông báo vào collection announcements trên Firestore
+                await addDoc(collection(db, "announcements"), {
+                    title: title,
+                    body: body,
+                    createdAt: new Date().toISOString()
+                });
+
+                $('noticeModal').close();
+                alert("Đã gửi thông báo thành công!");
+            } catch (err) {
+                console.error("Lỗi gửi thông báo:", err);
+                alert("Không thể gửi thông báo lúc này.");
+            }
+        };
+
+    </script>
+</body>
+</html>
