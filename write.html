@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IELTS Writing 30-Day Challenge</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --success: #16a34a;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 20px; line-height: 1.6; }
+    .container { max-width: 920px; margin: 0 auto; }
+
+    /* Header & Tabs */
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .tabs { display: flex; gap: 10px; }
+    .tab-btn { padding: 10px 18px; border: 1px solid var(--border); background: var(--card); border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* Màn hình 1: Bảng Lịch 30 Ngày */
+    .stage-title { font-size: 15px; font-weight: 700; color: var(--muted); margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .day-card { padding: 14px 10px; border-radius: 10px; text-align: center; cursor: pointer; border: 2px solid var(--border); background: var(--card); transition: 0.2s; }
+    .day-card .day-num { font-weight: 700; font-size: 16px; display: block; }
+    .day-card .day-desc { font-size: 12px; color: var(--muted); margin-top: 4px; display: block; }
+
+    .day-completed { border-color: var(--success); background: #f0fdf4; color: #166534; }
+    .day-active { border-color: var(--primary); background: #eff6ff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); transform: translateY(-2px); }
+    .day-locked { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; cursor: not-allowed; opacity: 0.65; }
+
+    /* Màn hình 2: Khu vực Bài tập (Ẩn Lịch khi mở) */
+    #lesson-view { display: none; background: var(--card); border-radius: 12px; padding: 24px; border: 1px solid var(--border); }
+    .lesson-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .step-box { border-left: 4px solid var(--primary); background: #f8fafc; padding: 18px; border-radius: 0 8px 8px 0; margin: 24px 0; }
+    .question-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 14px; }
+    
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+    .bad-box { background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 8px; }
+    .good-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 8px; }
+
+    /* Bài tập Ghép cụm từ */
+    .chunk-pool, .chunk-answer { display: flex; flex-wrap: wrap; gap: 8px; min-height: 46px; padding: 10px; border: 2px dashed var(--border); border-radius: 8px; margin-top: 8px; align-items: center; }
+    .chunk-item { padding: 6px 12px; background: white; border: 1px solid var(--primary); color: var(--primary); border-radius: 6px; cursor: pointer; font-weight: 500; user-select: none; font-size: 14px; }
+    .chunk-item:hover { background: #eff6ff; }
+
+    /* Bài tập Nâng cấp câu */
+    .vocab-bank { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+    .vocab-tag { background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+    textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-top: 8px; font-size: 15px; resize: vertical; }
+    
+    .btn { padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; margin-right: 8px; font-size: 14px; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-success { background: var(--success); color: white; width: 100%; font-size: 16px; padding: 14px; margin-top: 20px; }
+    .btn-outline { background: white; border: 1px solid var(--muted); color: var(--text); }
+    .hidden-box { display: none; margin-top: 10px; padding: 12px; border-radius: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; font-size: 14px; }
+
+    /* Góc Chấm Chéo */
+    .peer-card { background: var(--card); padding: 20px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 16px; }
+    .checklist label { display: block; margin: 8px 0; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div>
+      <h1>✍️ IELTS Writing 30-Day Roadmap</h1>
+      <p style="color: var(--muted);">Hoàn thành bài tập mỗi ngày để mở khóa ngày tiếp theo</p>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('roadmap')">📅 Lộ trình 30 Ngày</button>
+      <button class="tab-btn" onclick="switchTab('peer')">🤝 Góc Chấm Chéo</button>
+    </div>
+  </header>
+
+  <!-- TAB 1: LỘ TRÌNH -->
+  <div id="tab-roadmap">
+    
+    <!-- MÀN HÌNH 1A: BẢNG LỊCH 30 NGÀY -->
+    <div id="calendar-view">
+      <div id="calendar-container"></div>
+    </div>
+
+    <!-- MÀN HÌNH 1B: BÀI TẬP CHI TIẾT CỦA NGÀY (Khi mở sẽ ẩn Lịch đi) -->
+    <div id="lesson-view">
+      <div class="lesson-topbar">
+        <button class="btn btn-outline" style="margin:0;" onclick="backToCalendar()">⬅️ Quay lại Bảng Lịch 30 Ngày</button>
+        <span id="lesson-progress-badge" style="font-weight: 700; color: var(--primary);"></span>
+      </div>
+
+      <h2 id="lesson-title"></h2>
+      
+      <!-- Bước 1: Lý thuyết -->
+      <div class="step-box">
+        <h3>💡 Bước 1: Công thức & So sánh Band điểm</h3>
+        <p id="lesson-formula" style="font-weight: 600; color: var(--primary); margin-top: 6px;"></p>
+        <div class="compare-grid">
+          <div class="bad-box">❌ <strong>Band 5.0 (Câu gốc):</strong><br><span id="comp-bad"></span></div>
+          <div class="good-box">✅ <strong>Band 7.0+ (Chuẩn IELTS):</strong><br><span id="comp-good"></span></div>
+        </div>
+      </div>
+
+      <!-- Bước 2: Danh sách câu ghép mảnh (Tự động sinh từ write-data.js) -->
+      <div class="step-box">
+        <h3>🧩 Bước 2: Làm nóng — Click ghép các cụm từ thành câu hoàn chỉnh</h3>
+        <div id="chunk-questions-container"></div>
+      </div>
+
+      <!-- Bước 3: Danh sách câu tự gõ nâng cấp (Tự động sinh từ write-data.js) -->
+      <div class="step-box">
+        <h3>✍️ Bước 3: Thực chiến — Tự gõ nâng cấp câu</h3>
+        <div id="upgrade-questions-container"></div>
+      </div>
+
+      <button class="btn btn-success" onclick="completeCurrentDay()">🎉 Hoàn thành Ngày học & Mở khóa Ngày tiếp theo</button>
+    </div>
+
+  </div>
+
+  <!-- TAB 2: GÓC CHẤM CHÉO -->
+  <div id="tab-peer" style="display: none;">
+    <div class="peer-card">
+      <h3>📌 Bài viết chờ chấm chéo (Dành cho Chặng 2 - 4)</h3>
+      <p style="color: var(--muted); font-size: 14px; margin-bottom: 12px;">Người viết: <strong>Thành viên #2</strong> | Đề bài: Ngày 8 - Viết đoạn PEEL chủ đề Environment</p>
+      <p style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border);">
+        "The primary reason behind severe urban air pollution is the over-reliance on private vehicles. As millions of commuters use personal cars daily, a massive amount of exhaust fumes is released directly into the atmosphere..."
+      </p>
+      <div class="checklist" style="margin-top: 16px;">
+        <h4>Checklist chấm nhanh (Rubric IELTS):</h4>
+        <label><input type="checkbox"> 1. Đã có câu chủ đề (Topic Sentence) rõ ràng ở đầu đoạn.</label>
+        <label><input type="checkbox"> 2. Có câu giải thích nguyên nhân/hệ quả (Explain) hợp lý.</label>
+        <label><input type="checkbox"> 3. Sử dụng ít nhất 2 cụm từ vựng học thuật của bài học.</label>
+        <textarea rows="2" placeholder="Nhập thêm 1 góp ý sửa lỗi ngữ pháp hoặc lời khen cho bạn mình..."></textarea>
+        <button class="btn btn-primary" onclick="alert('Ở Bước 3 sẽ kết nối nút này thẳng lên Firebase!')">Gửi nhận xét</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NHÚNG FILE DỮ LIỆU ĐỀ BÀI TỪ BÊN NGOÀI -->
+<script src="write-data.js"></script>
+
+<!-- LOGIC ĐIỀU KHIỂN GIAO DIỆN -->
+<script>
+  let unlockedDay = parseInt(localStorage.getItem('ielts_unlocked_day')) || 1;
+  let activeDay = 1;
+  let userChunkSelections = {}; // Lưu trạng thái ghép câu của từng câu hỏi
+
+  const stages = [
+    { name: "Chặng 1 (Tuần 1): Xóa mù & Nâng cấp câu (Sentence Mastery)", start: 1, end: 7 },
+    { name: "Chặng 2 (Tuần 2): Tư duy viết đoạn P-E-E-L (Paragraph Building)", start: 8, end: 14 },
+    { name: "Chặng 3 (Tuần 3): Chiến thuật Biểu đồ Task 1", start: 15, end: 21 },
+    { name: "Chặng 4 (Tuần 4): Thực chiến Task 2 & Chấm chéo", start: 22, end: 30 }
+  ];
+
+  // Vẽ bảng lịch 30 ngày
+  function renderCalendar() {
+    const container = document.getElementById('calendar-container');
+    container.innerHTML = '';
+
+    stages.forEach(stage => {
+      const title = document.createElement('div');
+      title.className = 'stage-title';
+      title.innerText = stage.name;
+      container.appendChild(title);
+
+      const grid = document.createElement('div');
+      grid.className = 'calendar-grid';
+
+      for (let d = stage.start; d <= stage.end; d++) {
+        const card = document.createElement('div');
+        let statusClass = 'day-locked';
+        let icon = '🔒';
+
+        if (d < unlockedDay) { statusClass = 'day-completed'; icon = '✅'; }
+        else if (d === unlockedDay) { statusClass = 'day-active'; icon = '🔥'; }
+
+        card.className = `day-card ${statusClass}`;
+        const desc = (typeof lessonsData !== 'undefined' && lessonsData[d]) ? lessonsData[d].shortDesc : "Đang khóa";
+        card.innerHTML = `<span class="day-num">${icon} Ngày ${d}</span><span class="day-desc">${desc}</span>`;
+
+        if (d <= unlockedDay) {
+          card.onclick = () => openDay(d);
+        }
+        grid.appendChild(card);
+      }
+      container.appendChild(grid);
+    });
+  }
+
+  // Khi bấm vào 1 ngày: Ẩn Lịch, Hiện Bài Tập của ngày đó
+  function openDay(day) {
+    activeDay = day;
+    const data = lessonsData[day] || lessonsData[1];
+
+    document.getElementById('calendar-view').style.display = 'none';
+    document.getElementById('lesson-view').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    document.getElementById('lesson-progress-badge').innerText = `Ngày ${day} / 30 (${data.chunksList.length + data.upgradesList.length} bài tập)`;
+    document.getElementById('lesson-title').innerText = data.title;
+    document.getElementById('lesson-formula').innerText = data.formula;
+    document.getElementById('comp-bad').innerText = data.bad;
+    document.getElementById('comp-good').innerText = data.good;
+
+    // Sinh danh sách câu hỏi Ghép cụm (Bước 2)
+    const chunkContainer = document.getElementById('chunk-questions-container');
+    chunkContainer.innerHTML = '';
+    userChunkSelections = {};
+
+    data.chunksList.forEach((item, idx) => {
+      userChunkSelections[idx] = [];
+      const qDiv = document.createElement('div');
+      qDiv.className = 'question-item';
+      qDiv.innerHTML = `
+        <p><strong>Câu 2.${idx + 1}:</strong> <span style="color:var(--muted);">${item.vn}</span></p>
+        <div class="chunk-answer" id="chunk-ans-${idx}"></div>
+        <div class="chunk-pool" id="chunk-pool-${idx}"></div>
+        <button class="btn btn-outline" onclick="resetSingleChunk(${idx})">🔄 Xếp lại</button>
+        <button class="btn btn-primary" onclick="checkSingleChunk(${idx})">✔️ Kiểm tra</button>
+        <p id="chunk-fb-${idx}" style="margin-top:8px; font-weight:600;"></p>
+      `;
+      chunkContainer.appendChild(qDiv);
+      renderSingleChunkPool(idx, item.chunks);
+    });
+
+    // Sinh danh sách câu hỏi Nâng cấp câu (Bước 3)
+    const upContainer = document.getElementById('upgrade-questions-container');
+    upContainer.innerHTML = '';
+
+    data.upgradesList.forEach((item, idx) => {
+      const uDiv = document.createElement('div');
+      uDiv.className = 'question-item';
+      const vocabHtml = item.vocab.map(v => `<span class="vocab-tag">${v}</span>`).join('');
+      uDiv.innerHTML = `
+        <p><strong>Đề 3.${idx + 1} — Câu gốc:</strong> <code style="background:#e2e8f0; padding:2px 6px; border-radius:4px;">${item.original}</code></p>
+        <p style="margin-top:6px; font-size:14px;">📌 ${item.instruction}</p>
+        <div class="vocab-bank">${vocabHtml}</div>
+        <textarea class="upgrade-input" rows="2" placeholder="Gõ câu nâng cấp của bạn vào đây..."></textarea>
+        <div>
+          <button class="btn btn-outline" onclick="toggleBox('skel-${idx}')">🔍 Xem khung gợi ý</button>
+          <button class="btn btn-primary" onclick="toggleBox('mod-${idx}')">🎯 Đối chiếu Đáp án chuẩn</button>
+        </div>
+        <div id="skel-${idx}" class="hidden-box" style="background:#eff6ff; border-color:#bfdbfe;">💡 <strong>Khung gợi ý:</strong> ${item.skeleton}</div>
+        <div id="mod-${idx}" class="hidden-box">🎯 <strong>Đáp án chuẩn:</strong> ${item.model}</div>
+      `;
+      upContainer.appendChild(uDiv);
+    });
+  }
+
+  // Quay lại màn hình Lịch 30 ngày
+  function backToCalendar() {
+    document.getElementById('lesson-view').style.display = 'none';
+    document.getElementById('calendar-view').style.display = 'block';
+    renderCalendar();
+  }
+
+  // Xử lý ghép cụm cho từng câu
+  function renderSingleChunkPool(qIdx, chunksArray) {
+    const pool = document.getElementById(`chunk-pool-${qIdx}`);
+    const ans = document.getElementById(`chunk-ans-${qIdx}`);
+    pool.innerHTML = '';
+    ans.innerHTML = '';
+
+    const shuffled = [...chunksArray].sort(() => Math.random() - 0.5);
+    shuffled.forEach(text => {
+      const btn = document.createElement('span');
+      btn.className = 'chunk-item';
+      btn.innerText = text;
+      btn.onclick = () => {
+        userChunkSelections[qIdx].push(text);
+        btn.style.display = 'none';
+        const ansSpan = document.createElement('span');
+        ansSpan.className = 'chunk-item';
+        ansSpan.innerText = text;
+        ans.appendChild(ansSpan);
+      };
+      pool.appendChild(btn);
+    });
+  }
+
+  function resetSingleChunk(qIdx) {
+    userChunkSelections[qIdx] = [];
+    document.getElementById(`chunk-fb-${qIdx}`).innerText = '';
+    renderSingleChunkPool(qIdx, lessonsData[activeDay].chunksList[qIdx].chunks);
+  }
+
+  function checkSingleChunk(qIdx) {
+    const correct = lessonsData[activeDay].chunksList[qIdx].chunks.join(' ');
+    const userAns = userChunkSelections[qIdx].join(' ');
+    const fb = document.getElementById(`chunk-fb-${qIdx}`);
+    if (userAns === correct) {
+      fb.style.color = 'var(--success)';
+      fb.innerText = '🎉 Chính xác! Bạn đã ghép đúng cấu trúc câu.';
+    } else {
+      fb.style.color = '#dc2626';
+      fb.innerText = '❌ Chưa đúng thứ tự, hãy bấm "Xếp lại" nhé!';
+    }
+  }
+
+  function toggleBox(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'block' ? 'none' : 'block';
+  }
+
+  // Hoàn thành ngày học -> Mở khóa ngày kế tiếp & Quay về bảng Lịch
+  function completeCurrentDay() {
+    const inputs = document.querySelectorAll('.upgrade-input');
+    for (let i = 0; i < inputs.length; i++) {
+      if (inputs[i].value.trim().length < 15) {
+        alert(`Bạn vui lòng hoàn thành Đề 3.${i + 1} ở Bước 3 trước khi nộp bài nhé!`);
+        inputs[i].focus();
+        return;
+      }
+    }
+
+    if (activeDay === unlockedDay && unlockedDay < 30) {
+      unlockedDay++;
+      localStorage.setItem('ielts_unlocked_day', unlockedDay);
+    }
+    alert(`🎉 Tuyệt vời! Bạn đã hoàn thành Ngày ${activeDay}. Ngày ${unlockedDay} đã được mở khóa trên Bảng Lịch!`);
+    backToCalendar();
+  }
+
+  function switchTab(tab) {
+    document.getElementById('tab-roadmap').style.display = tab === 'roadmap' ? 'block' : 'none';
+    document.getElementById('tab-peer').style.display = tab === 'peer' ? 'block' : 'none';
+    document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+      btn.classList.toggle('active', (tab === 'roadmap' && idx === 0) || (tab === 'peer' && idx === 1));
+    });
+  }
+
+  renderCalendar();
+</script>
+</body>
+</html>
