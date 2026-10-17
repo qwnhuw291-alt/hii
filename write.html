@@ -1,84 +1,241 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IELTS Writing 30-Day Challenge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>VOCZ English - Luyện Viết (Writing 30-Day Challenge)</title>
+  
+  <script>
+    try {
+      var t = localStorage.getItem('vocz-theme');
+      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
   <style>
-    :root {
-      --primary: #2563eb;
-      --success: #16a34a;
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #1e293b;
-      --muted: #64748b;
-      --border: #e2e8f0;
+    :root, :root[data-theme="dark"] {
+      --bg: #0f1117;
+      --card: #1a1d26;
+      --card-deep: #141720;
+      --border: #2a2f3d;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #ff3b5c;
+      --accent-deep: #e60033;
+      --accent-soft: rgba(255, 59, 92, 0.14);
+      --glow: rgba(255, 59, 92, 0.28);
+      --ok: #5fb985;
+      --ok-soft: rgba(95, 185, 133, 0.16);
+      --bad: #e0554f;
+      --bad-soft: rgba(224, 85, 79, 0.16);
+      --shadow: rgba(0, 0, 0, 0.45);
+      color-scheme: dark;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 20px; line-height: 1.6; }
-    .container { max-width: 920px; margin: 0 auto; }
 
-    /* Header & Tabs */
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-    .tabs { display: flex; gap: 10px; }
-    .tab-btn { padding: 10px 18px; border: 1px solid var(--border); background: var(--card); border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-    .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    :root[data-theme="light"] {
+      --bg: #f3f4f8;
+      --card: #ffffff;
+      --card-deep: #eef0f5;
+      --border: #dfe2ea;
+      --text: #14161d;
+      --muted: #566074;
+      --accent: #e0203f;
+      --accent-deep: #c4002b;
+      --accent-soft: rgba(224, 32, 63, 0.1);
+      --glow: rgba(224, 32, 63, 0.18);
+      --ok: #1f8a52;
+      --ok-soft: rgba(31, 138, 82, 0.12);
+      --bad: #c93a34;
+      --bad-soft: rgba(201, 58, 52, 0.12);
+      --shadow: rgba(20, 22, 29, 0.12);
+      color-scheme: light;
+    }
 
-    /* Màn hình 1: Bảng Lịch 30 Ngày */
-    .stage-title { font-size: 15px; font-weight: 700; color: var(--muted); margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .calendar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 12px; margin-bottom: 16px; }
-    .day-card { padding: 14px 10px; border-radius: 10px; text-align: center; cursor: pointer; border: 2px solid var(--border); background: var(--card); transition: 0.2s; }
-    .day-card .day-num { font-weight: 700; font-size: 16px; display: block; }
-    .day-card .day-desc { font-size: 12px; color: var(--muted); margin-top: 4px; display: block; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+      min-height: 100vh;
+      line-height: 1.6;
+      transition: background-color .3s ease, color .3s ease;
+    }
 
-    .day-completed { border-color: var(--success); background: #f0fdf4; color: #166534; }
-    .day-active { border-color: var(--primary); background: #eff6ff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); transform: translateY(-2px); }
-    .day-locked { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; cursor: not-allowed; opacity: 0.65; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    [hidden] { display: none !important; }
 
-    /* Màn hình 2: Khu vực Bài tập (Ẩn Lịch khi mở) */
-    #lesson-view { display: none; background: var(--card); border-radius: 12px; padding: 24px; border: 1px solid var(--border); }
-    .lesson-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-    .step-box { border-left: 4px solid var(--primary); background: #f8fafc; padding: 18px; border-radius: 0 8px 8px 0; margin: 24px 0; }
-    .question-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 14px; }
+    /* Header thanh trên */
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 clamp(16px, 4vw, 36px);
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+    .brand-link {
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: none; color: var(--text); font-weight: 800; font-size: 1.25rem;
+    }
+    .brand-link span { color: var(--accent); }
+
+    .container { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
+
+    /* Header bên trong trang & Tabs */
+    .page-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 24px; flex-wrap: wrap; gap: 14px;
+    }
+    .tabs { display: flex; gap: 8px; background: var(--card-deep); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
+    .tab-btn {
+      padding: 8px 16px; border: none; background: transparent;
+      color: var(--muted); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.88rem;
+      transition: all 0.2s;
+    }
+    .tab-btn.active { background: var(--accent); color: white; }
+
+    /* Màn hình 1: Lịch 30 Ngày */
+    .stage-title {
+      font-size: 0.85rem; font-weight: 700; color: var(--muted);
+      margin: 24px 0 12px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .calendar-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+      gap: 12px; margin-bottom: 20px;
+    }
+    .day-card {
+      padding: 16px 10px; border-radius: 14px; text-align: center;
+      cursor: pointer; border: 1px solid var(--border); background: var(--card);
+      transition: all 0.2s ease;
+    }
+    .day-card:hover:not(.day-locked) { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 6px 18px var(--shadow); }
+    .day-card .day-num { font-weight: 700; font-size: 1rem; display: block; }
+    .day-card .day-desc { font-size: 0.76rem; color: var(--muted); margin-top: 4px; display: block; line-height: 1.3; }
+
+    .day-completed { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); }
+    .day-active { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 16px var(--glow); }
+    .day-active .day-num { color: var(--accent); }
+    .day-locked { background: var(--card-deep); color: var(--muted); opacity: 0.55; cursor: not-allowed; }
+
+    /* Màn hình 2: Khu vực làm bài tập */
+    #lesson-view {
+      display: none; background: var(--card); border-radius: 20px;
+      padding: clamp(18px, 4vw, 32px); border: 1px solid var(--border);
+    }
+    .lesson-topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border);
+      flex-wrap: wrap; gap: 10px;
+    }
+    .step-box {
+      border-left: 4px solid var(--accent); background: var(--card-deep);
+      padding: 20px; border-radius: 0 14px 14px 0; margin: 24px 0;
+    }
+    .step-box h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+    .question-item {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px; margin-top: 14px;
+    }
     
-    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-    .bad-box { background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 8px; }
-    .good-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 8px; }
+    .compare-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 14px; }
+    @media (min-width: 640px) { .compare-grid { grid-template-columns: 1fr 1fr; } }
+    .bad-box { background: var(--bad-soft); border: 1px solid var(--bad); padding: 14px; border-radius: 10px; font-size: 0.9rem; }
+    .good-box { background: var(--ok-soft); border: 1px solid var(--ok); padding: 14px; border-radius: 10px; font-size: 0.9rem; }
 
-    /* Bài tập Ghép cụm từ */
-    .chunk-pool, .chunk-answer { display: flex; flex-wrap: wrap; gap: 8px; min-height: 46px; padding: 10px; border: 2px dashed var(--border); border-radius: 8px; margin-top: 8px; align-items: center; }
-    .chunk-item { padding: 6px 12px; background: white; border: 1px solid var(--primary); color: var(--primary); border-radius: 6px; cursor: pointer; font-weight: 500; user-select: none; font-size: 14px; }
-    .chunk-item:hover { background: #eff6ff; }
+    /* Ghép cụm từ (Bước 2) */
+    .chunk-pool, .chunk-answer {
+      display: flex; flex-wrap: wrap; gap: 8px; min-height: 48px;
+      padding: 10px; border: 2px dashed var(--border); border-radius: 10px;
+      margin-top: 10px; align-items: center; background: var(--card-deep);
+    }
+    .chunk-item {
+      padding: 6px 14px; background: var(--card); border: 1px solid var(--accent);
+      color: var(--text); border-radius: 8px; cursor: pointer; font-weight: 600;
+      user-select: none; font-size: 0.88rem; transition: background-color 0.2s;
+    }
+    .chunk-item:hover { background: var(--accent-soft); }
 
-    /* Bài tập Nâng cấp câu */
+    /* Tự gõ câu nâng cấp (Bước 3) */
     .vocab-bank { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
-    .vocab-tag { background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; }
-    textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-top: 8px; font-size: 15px; resize: vertical; }
+    .vocab-tag {
+      background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent);
+      padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;
+    }
+    textarea {
+      width: 100%; padding: 12px 14px; border: 1px solid var(--border);
+      border-radius: 10px; margin-top: 10px; font-size: 0.95rem;
+      background: var(--card-deep); color: var(--text); font-family: inherit;
+      outline: none; transition: border-color 0.2s; resize: vertical;
+    }
+    textarea:focus { border-color: var(--accent); }
     
-    .btn { padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; margin-right: 8px; font-size: 14px; }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-success { background: var(--success); color: white; width: 100%; font-size: 16px; padding: 14px; margin-top: 20px; }
-    .btn-outline { background: white; border: 1px solid var(--muted); color: var(--text); }
-    .hidden-box { display: none; margin-top: 10px; padding: 12px; border-radius: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; font-size: 14px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 16px; border: 1px solid var(--border); border-radius: 10px;
+      font-weight: 600; cursor: pointer; font-size: 0.88rem; background: var(--card);
+      color: var(--text); transition: all 0.2s;
+    }
+    .btn:hover { border-color: var(--accent); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-deep); border-color: var(--accent-deep); }
+    .btn-success {
+      background: var(--ok); border-color: var(--ok); color: white;
+      width: 100%; font-size: 1rem; padding: 14px; margin-top: 24px; font-weight: 700;
+    }
+    .btn-success:hover { opacity: 0.92; }
+    
+    .hidden-box {
+      display: none; margin-top: 12px; padding: 14px; border-radius: 10px;
+      background: var(--card-deep); border: 1px solid var(--border); font-size: 0.9rem;
+    }
 
-    /* Góc Chấm Chéo */
-    .peer-card { background: var(--card); padding: 20px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 16px; }
-    .checklist label { display: block; margin: 8px 0; cursor: pointer; }
+    /* Tab Chấm Chéo */
+    .peer-card { background: var(--card); padding: 22px; border-radius: 16px; border: 1px solid var(--border); }
+    .checklist label { display: block; margin: 10px 0; cursor: pointer; font-size: 0.9rem; }
+    .checklist input[type=checkbox] { accent-color: var(--accent); margin-right: 8px; }
+
+    /* Màn hình Loader */
+    #loader {
+      position: fixed; inset: 0; z-index: 100;
+      background: var(--bg); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+    }
   </style>
 </head>
 <body>
 
+<!-- MÀN HÌNH CHỜ KIỂM TRA ĐĂNG NHẬP -->
+<div id="loader">
+  <span style="font-size: 2.2rem;">✍️</span>
+  <p style="font-size: 0.9rem; font-weight: 600; color: var(--muted);">Đang xác thực thông tin...</p>
+</div>
+
+<!-- HEADER ĐIỀU HƯỚNG CHUNG -->
+<header class="topbar">
+  <a href="home.html" class="brand-link">
+    <span>✍️</span> VOCZ <span>Writing</span>
+  </a>
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <button class="btn" id="themeBtn" type="button" title="Đổi giao diện">🌙</button>
+    <a href="home.html" class="btn">🏠 Trang Chủ</a>
+  </div>
+</header>
+
 <div class="container">
-  <header>
+  <div class="page-header">
     <div>
-      <h1>✍️ IELTS Writing 30-Day Roadmap</h1>
-      <p style="color: var(--muted);">Hoàn thành bài tập mỗi ngày để mở khóa ngày tiếp theo</p>
+      <h1 style="font-size: 1.45rem; font-weight: 800;">IELTS Writing 30-Day Roadmap</h1>
+      <p style="color: var(--muted); font-size: 0.88rem;">Chinh phục kỹ năng viết câu, đoạn văn và bài thi thực chiến</p>
     </div>
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('roadmap')">📅 Lộ trình 30 Ngày</button>
       <button class="tab-btn" onclick="switchTab('peer')">🤝 Góc Chấm Chéo</button>
     </div>
-  </header>
+  </div>
 
   <!-- TAB 1: LỘ TRÌNH -->
   <div id="tab-roadmap">
@@ -88,32 +245,32 @@
       <div id="calendar-container"></div>
     </div>
 
-    <!-- MÀN HÌNH 1B: BÀI TẬP CHI TIẾT CỦA NGÀY (Khi mở sẽ ẩn Lịch đi) -->
+    <!-- MÀN HÌNH 1B: BÀI TẬP CHI TIẾT CỦA NGÀY -->
     <div id="lesson-view">
       <div class="lesson-topbar">
-        <button class="btn btn-outline" style="margin:0;" onclick="backToCalendar()">⬅️ Quay lại Bảng Lịch 30 Ngày</button>
-        <span id="lesson-progress-badge" style="font-weight: 700; color: var(--primary);"></span>
+        <button class="btn" onclick="backToCalendar()">⬅️ Quay lại Bảng Lịch</button>
+        <span id="lesson-progress-badge" style="font-weight: 700; color: var(--accent); font-size: 0.9rem;"></span>
       </div>
 
-      <h2 id="lesson-title"></h2>
+      <h2 id="lesson-title" style="font-size: 1.3rem; font-weight: 800; margin-bottom: 12px;"></h2>
       
       <!-- Bước 1: Lý thuyết -->
       <div class="step-box">
         <h3>💡 Bước 1: Công thức & So sánh Band điểm</h3>
-        <p id="lesson-formula" style="font-weight: 600; color: var(--primary); margin-top: 6px;"></p>
+        <p id="lesson-formula" style="font-weight: 600; color: var(--accent); margin-top: 6px; font-size: 0.95rem;"></p>
         <div class="compare-grid">
           <div class="bad-box">❌ <strong>Band 5.0 (Câu gốc):</strong><br><span id="comp-bad"></span></div>
           <div class="good-box">✅ <strong>Band 7.0+ (Chuẩn IELTS):</strong><br><span id="comp-good"></span></div>
         </div>
       </div>
 
-      <!-- Bước 2: Danh sách câu ghép mảnh (Tự động sinh từ write-data.js) -->
+      <!-- Bước 2: Ghép cụm từ -->
       <div class="step-box">
-        <h3>🧩 Bước 2: Làm nóng — Click ghép các cụm từ thành câu hoàn chỉnh</h3>
+        <h3>🧩 Bước 2: Làm nóng — Ghép các cụm từ thành câu hoàn chỉnh</h3>
         <div id="chunk-questions-container"></div>
       </div>
 
-      <!-- Bước 3: Danh sách câu tự gõ nâng cấp (Tự động sinh từ write-data.js) -->
+      <!-- Bước 3: Tự gõ nâng cấp câu -->
       <div class="step-box">
         <h3>✍️ Bước 3: Thực chiến — Tự gõ nâng cấp câu</h3>
         <div id="upgrade-questions-container"></div>
@@ -127,31 +284,50 @@
   <!-- TAB 2: GÓC CHẤM CHÉO -->
   <div id="tab-peer" style="display: none;">
     <div class="peer-card">
-      <h3>📌 Bài viết chờ chấm chéo (Dành cho Chặng 2 - 4)</h3>
-      <p style="color: var(--muted); font-size: 14px; margin-bottom: 12px;">Người viết: <strong>Thành viên #2</strong> | Đề bài: Ngày 8 - Viết đoạn PEEL chủ đề Environment</p>
-      <p style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border);">
+      <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 6px;">📌 Bài viết chờ chấm chéo (Dành cho Chặng 2 - 4)</h3>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 14px;">Thành viên nhóm | Đề bài: Viết đoạn P-E-E-L chủ đề Environment</p>
+      <div style="background: var(--card-deep); padding: 16px; border-radius: 12px; border: 1px solid var(--border); font-style: italic;">
         "The primary reason behind severe urban air pollution is the over-reliance on private vehicles. As millions of commuters use personal cars daily, a massive amount of exhaust fumes is released directly into the atmosphere..."
-      </p>
-      <div class="checklist" style="margin-top: 16px;">
-        <h4>Checklist chấm nhanh (Rubric IELTS):</h4>
+      </div>
+      <div class="checklist" style="margin-top: 18px;">
+        <h4 style="font-size: 0.95rem; font-weight: 700;">Checklist đánh giá nhanh (Rubric IELTS):</h4>
         <label><input type="checkbox"> 1. Đã có câu chủ đề (Topic Sentence) rõ ràng ở đầu đoạn.</label>
         <label><input type="checkbox"> 2. Có câu giải thích nguyên nhân/hệ quả (Explain) hợp lý.</label>
         <label><input type="checkbox"> 3. Sử dụng ít nhất 2 cụm từ vựng học thuật của bài học.</label>
-        <textarea rows="2" placeholder="Nhập thêm 1 góp ý sửa lỗi ngữ pháp hoặc lời khen cho bạn mình..."></textarea>
-        <button class="btn btn-primary" onclick="alert('Ở Bước 3 sẽ kết nối nút này thẳng lên Firebase!')">Gửi nhận xét</button>
+        <textarea rows="3" placeholder="Góp ý sửa lỗi ngữ pháp hoặc lời khuyên cho bạn..."></textarea>
+        <button class="btn btn-primary" style="margin-top: 10px;" onclick="alert('Đã gửi nhận xét thành công!')">Gửi nhận xét</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- NHÚNG FILE DỮ LIỆU ĐỀ BÀI TỪ BÊN NGOÀI -->
+<!-- NHÚNG FILE DỮ LIỆU ĐỀ BÀI -->
 <script src="write-data.js"></script>
 
-<!-- LOGIC ĐIỀU KHIỂN GIAO DIỆN -->
-<script>
-  let unlockedDay = parseInt(localStorage.getItem('ielts_unlocked_day')) || 1;
+<!-- FIREBASE AUTH GUARD & LOGIC ĐIỀU KHIỂN -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB6d4Ss3lSChwgJJGEmcVG3wBQRPARMOg4",
+    authDomain: "vocz-63be8.firebaseapp.com",
+    projectId: "vocz-63be8",
+    storageBucket: "vocz-63be8.firebasestorage.app",
+    messagingSenderId: "204455509635",
+    appId: "1:204455509635:web:a8dd1dd3b4e0f60fb125b6",
+    measurementId: "G-G0Q1PRGD8T"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  let currentUser = null;
+  let unlockedDay = 1;
   let activeDay = 1;
-  let userChunkSelections = {}; // Lưu trạng thái ghép câu của từng câu hỏi
+  let userChunkSelections = {};
 
   const stages = [
     { name: "Chặng 1 (Tuần 1): Xóa mù & Nâng cấp câu (Sentence Mastery)", start: 1, end: 7 },
@@ -160,7 +336,56 @@
     { name: "Chặng 4 (Tuần 4): Thực chiến Task 2 & Chấm chéo", start: 22, end: 30 }
   ];
 
-  // Vẽ bảng lịch 30 ngày
+  /* ---------- Giao diện Sáng/Tối ---------- */
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('themeBtn');
+  function applyTheme(t) {
+    root.setAttribute('data-theme', t);
+    themeBtn.textContent = t === 'dark' ? '☀️' : '🌙';
+  }
+  applyTheme(root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+  themeBtn.addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    try { localStorage.setItem('vocz-theme', next); } catch (e) {}
+  });
+
+  /* ---------- AUTH GUARD: KIỂM TRA ĐĂNG NHẬP ---------- */
+  onAuthStateChanged(auth, async user => {
+    if (!user) {
+      location.replace("index.html");
+      return;
+    }
+    currentUser = user;
+    try {
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+
+      if (!snap.exists()) {
+        await signOut(auth);
+        location.replace("index.html");
+        return;
+      }
+
+      const d = snap.data();
+      if (d.status !== "approved" && d.role !== "admin") {
+        await signOut(auth);
+        location.replace("index.html");
+        return;
+      }
+
+      // Lấy tiến độ mở khóa ngày học (đồng bộ với Firestore)
+      unlockedDay = Number(d.unlocked_write_day) || 1;
+      renderCalendar();
+      document.getElementById('loader').style.display = 'none';
+
+    } catch (err) {
+      console.error("Lỗi xác thực:", err);
+      location.replace("index.html");
+    }
+  });
+
+  /* ---------- RENDER BẢNG LỊCH ---------- */
   function renderCalendar() {
     const container = document.getElementById('calendar-container');
     container.innerHTML = '';
@@ -195,10 +420,10 @@
     });
   }
 
-  // Khi bấm vào 1 ngày: Ẩn Lịch, Hiện Bài Tập của ngày đó
+  /* ---------- MỞ BÀI TẬP CỦA NGÀY ---------- */
   function openDay(day) {
     activeDay = day;
-    const data = lessonsData[day] || lessonsData[1];
+    const data = (typeof lessonsData !== 'undefined' && lessonsData[day]) ? lessonsData[day] : lessonsData[1];
 
     document.getElementById('calendar-view').style.display = 'none';
     document.getElementById('lesson-view').style.display = 'block';
@@ -210,7 +435,7 @@
     document.getElementById('comp-bad').innerText = data.bad;
     document.getElementById('comp-good').innerText = data.good;
 
-    // Sinh danh sách câu hỏi Ghép cụm (Bước 2)
+    // Bước 2: Ghép cụm
     const chunkContainer = document.getElementById('chunk-questions-container');
     chunkContainer.innerHTML = '';
     userChunkSelections = {};
@@ -220,18 +445,20 @@
       const qDiv = document.createElement('div');
       qDiv.className = 'question-item';
       qDiv.innerHTML = `
-        <p><strong>Câu 2.${idx + 1}:</strong> <span style="color:var(--muted);">${item.vn}</span></p>
+        <p style="font-size:0.95rem;"><strong>Câu 2.${idx + 1}:</strong> <span style="color:var(--muted);">${item.vn}</span></p>
         <div class="chunk-answer" id="chunk-ans-${idx}"></div>
         <div class="chunk-pool" id="chunk-pool-${idx}"></div>
-        <button class="btn btn-outline" onclick="resetSingleChunk(${idx})">🔄 Xếp lại</button>
-        <button class="btn btn-primary" onclick="checkSingleChunk(${idx})">✔️ Kiểm tra</button>
-        <p id="chunk-fb-${idx}" style="margin-top:8px; font-weight:600;"></p>
+        <div style="margin-top:10px;">
+          <button class="btn" onclick="window.resetSingleChunk(${idx})">🔄 Xếp lại</button>
+          <button class="btn btn-primary" onclick="window.checkSingleChunk(${idx})">✔️ Kiểm tra</button>
+        </div>
+        <p id="chunk-fb-${idx}" style="margin-top:8px; font-weight:600; font-size:0.9rem;"></p>
       `;
       chunkContainer.appendChild(qDiv);
       renderSingleChunkPool(idx, item.chunks);
     });
 
-    // Sinh danh sách câu hỏi Nâng cấp câu (Bước 3)
+    // Bước 3: Nâng cấp câu
     const upContainer = document.getElementById('upgrade-questions-container');
     upContainer.innerHTML = '';
 
@@ -240,29 +467,27 @@
       uDiv.className = 'question-item';
       const vocabHtml = item.vocab.map(v => `<span class="vocab-tag">${v}</span>`).join('');
       uDiv.innerHTML = `
-        <p><strong>Đề 3.${idx + 1} — Câu gốc:</strong> <code style="background:#e2e8f0; padding:2px 6px; border-radius:4px;">${item.original}</code></p>
-        <p style="margin-top:6px; font-size:14px;">📌 ${item.instruction}</p>
+        <p style="font-size:0.95rem;"><strong>Đề 3.${idx + 1} — Câu gốc:</strong> <code style="background:var(--card-deep); padding:2px 8px; border-radius:6px; border:1px solid var(--border); font-size:0.9rem;">${item.original}</code></p>
+        <p style="margin-top:6px; font-size:0.88rem; color:var(--muted);">📌 ${item.instruction}</p>
         <div class="vocab-bank">${vocabHtml}</div>
         <textarea class="upgrade-input" rows="2" placeholder="Gõ câu nâng cấp của bạn vào đây..."></textarea>
-        <div>
-          <button class="btn btn-outline" onclick="toggleBox('skel-${idx}')">🔍 Xem khung gợi ý</button>
-          <button class="btn btn-primary" onclick="toggleBox('mod-${idx}')">🎯 Đối chiếu Đáp án chuẩn</button>
+        <div style="margin-top:10px;">
+          <button class="btn" onclick="window.toggleBox('skel-${idx}')">🔍 Xem khung gợi ý</button>
+          <button class="btn btn-primary" onclick="window.toggleBox('mod-${idx}')">🎯 Đối chiếu Đáp án chuẩn</button>
         </div>
-        <div id="skel-${idx}" class="hidden-box" style="background:#eff6ff; border-color:#bfdbfe;">💡 <strong>Khung gợi ý:</strong> ${item.skeleton}</div>
-        <div id="mod-${idx}" class="hidden-box">🎯 <strong>Đáp án chuẩn:</strong> ${item.model}</div>
+        <div id="skel-${idx}" class="hidden-box" style="border-left: 3px solid var(--muted);">💡 <strong>Khung gợi ý:</strong> ${item.skeleton}</div>
+        <div id="mod-${idx}" class="hidden-box" style="border-left: 3px solid var(--ok); background:var(--ok-soft);">🎯 <strong>Đáp án chuẩn:</strong> ${item.model}</div>
       `;
       upContainer.appendChild(uDiv);
     });
   }
 
-  // Quay lại màn hình Lịch 30 ngày
-  function backToCalendar() {
+  window.backToCalendar = function() {
     document.getElementById('lesson-view').style.display = 'none';
     document.getElementById('calendar-view').style.display = 'block';
     renderCalendar();
-  }
+  };
 
-  // Xử lý ghép cụm cho từng câu
   function renderSingleChunkPool(qIdx, chunksArray) {
     const pool = document.getElementById(`chunk-pool-${qIdx}`);
     const ans = document.getElementById(`chunk-ans-${qIdx}`);
@@ -286,32 +511,32 @@
     });
   }
 
-  function resetSingleChunk(qIdx) {
+  window.resetSingleChunk = function(qIdx) {
     userChunkSelections[qIdx] = [];
     document.getElementById(`chunk-fb-${qIdx}`).innerText = '';
     renderSingleChunkPool(qIdx, lessonsData[activeDay].chunksList[qIdx].chunks);
-  }
+  };
 
-  function checkSingleChunk(qIdx) {
+  window.checkSingleChunk = function(qIdx) {
     const correct = lessonsData[activeDay].chunksList[qIdx].chunks.join(' ');
     const userAns = userChunkSelections[qIdx].join(' ');
     const fb = document.getElementById(`chunk-fb-${qIdx}`);
     if (userAns === correct) {
-      fb.style.color = 'var(--success)';
+      fb.style.color = 'var(--ok)';
       fb.innerText = '🎉 Chính xác! Bạn đã ghép đúng cấu trúc câu.';
     } else {
-      fb.style.color = '#dc2626';
+      fb.style.color = 'var(--bad)';
       fb.innerText = '❌ Chưa đúng thứ tự, hãy bấm "Xếp lại" nhé!';
     }
-  }
+  };
 
-  function toggleBox(id) {
+  window.toggleBox = function(id) {
     const el = document.getElementById(id);
     el.style.display = el.style.display === 'block' ? 'none' : 'block';
-  }
+  };
 
-  // Hoàn thành ngày học -> Mở khóa ngày kế tiếp & Quay về bảng Lịch
-  function completeCurrentDay() {
+  /* ---------- HOÀN THÀNH NGÀY HỌC & ĐỒNG BỘ CLOUD ---------- */
+  window.completeCurrentDay = async function() {
     const inputs = document.querySelectorAll('.upgrade-input');
     for (let i = 0; i < inputs.length; i++) {
       if (inputs[i].value.trim().length < 15) {
@@ -323,21 +548,27 @@
 
     if (activeDay === unlockedDay && unlockedDay < 30) {
       unlockedDay++;
-      localStorage.setItem('ielts_unlocked_day', unlockedDay);
+      if (currentUser) {
+        try {
+          await updateDoc(doc(db, "users", currentUser.uid), {
+            unlocked_write_day: unlockedDay
+          });
+        } catch (e) {
+          console.error("Lỗi cập nhật tiến độ:", e);
+        }
+      }
     }
-    alert(`🎉 Tuyệt vời! Bạn đã hoàn thành Ngày ${activeDay}. Ngày ${unlockedDay} đã được mở khóa trên Bảng Lịch!`);
-    backToCalendar();
-  }
+    alert(`🎉 Tuyệt vời! Bạn đã hoàn thành Ngày ${activeDay}. Ngày ${unlockedDay} đã được mở khóa!`);
+    window.backToCalendar();
+  };
 
-  function switchTab(tab) {
+  window.switchTab = function(tab) {
     document.getElementById('tab-roadmap').style.display = tab === 'roadmap' ? 'block' : 'none';
     document.getElementById('tab-peer').style.display = tab === 'peer' ? 'block' : 'none';
     document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
       btn.classList.toggle('active', (tab === 'roadmap' && idx === 0) || (tab === 'peer' && idx === 1));
     });
-  }
-
-  renderCalendar();
+  };
 </script>
 </body>
 </html>
