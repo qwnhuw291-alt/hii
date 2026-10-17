@@ -291,7 +291,7 @@ const lessonsData = {
         model: "Since many university graduates lack essential interpersonal skills, they struggle to secure employment."
       }
     ]
-  }
+  },
   // ==========================================
   // CHẶNG 2 (TUẦN 2): TƯ DUY VIẾT ĐOẠN P-E-E-L (NGÀY 8 -> 14)
   // ==========================================
@@ -601,7 +601,7 @@ const lessonsData = {
         model: "Admittedly, making university education completely free can provide equal learning opportunities for underprivileged students. However, this policy would place an enormous financial strain on the state budget and potentially lower the quality of teaching."
       }
     ]
-  }
+  },
 // ==========================================
   // CHẶNG 3 (TUẦN 3): CHIẾN THUẬT TASK 1 - BIỂU ĐỒ & QUY TRÌNH (NGÀY 15 -> 21)
   // ==========================================
