@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ReadForge-VOCZ</title>
+<script>try{var t=localStorage.getItem('vocz-theme');if(t==='light'||t==='sepia'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+:root{--bg:#f8fafc;--surface:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--primary:#2563eb;--accent:#7c3aed;--danger:#ef4444;--bar:#1e293b;--bar-text:#fff;color-scheme:light}
+[data-theme="sepia"]{--bg:#fbf7ee;--surface:#f4ecd8;--text:#433422;--muted:#79664f;--border:#e8dcc4;--primary:#b45309;--bar:#433422;--bar-text:#fbf7ee}
+[data-theme="dark"]{--bg:#0f172a;--surface:#1e293b;--text:#f1f5f9;--muted:#94a3b8;--border:#334155;--primary:#60a5fa;--bar:#f1f5f9;--bar-text:#0f172a;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 16px;padding-top:calc(8px + env(safe-area-inset-top,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;align-items:center;gap:10px;z-index:20}
+.brand-link{font-weight:700;font-size:1.1rem;text-decoration:none;color:var(--text);white-space:nowrap}
+.nav-actions{display:flex;align-items:center;gap:6px;margin-left:auto}
+.btn{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:8px;cursor:pointer;font-weight:500;font-size:.85rem;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap;min-height:36px}
+.btn:hover{background:var(--border)}
+.btn-primary{background:var(--primary);color:#fff;border:none}
+.btn-primary:hover{background:var(--primary);opacity:.9}
+.btn-danger{color:var(--danger);border-color:rgba(239,68,68,.35)}
+.search-group{display:flex;align-items:center;gap:8px;flex:1;max-width:680px;margin-left:auto}
+.search-group input{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:.85rem;font-family:inherit;outline:none;min-width:0;flex:1}
+.search-group input:focus{border-color:var(--primary)}
+#aiInput:focus{border-color:var(--accent)}
+#searchBtn{display:none}
+.menu-wrap{position:relative}
+.menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:6px;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:50;display:flex;flex-direction:column;gap:4px}
+.menu .btn{width:100%;justify-content:flex-start;border:none}
+.menu .row{display:flex;gap:6px;align-items:center;padding:2px 4px;font-size:.85rem;color:var(--muted)}
+.menu .row .btn{width:auto;flex:1;justify-content:center;border:1px solid var(--border)}
+.workspace{display:flex;flex:1;overflow:hidden;position:relative;min-height:0}
+.reading-container{flex:1;overflow-y:auto;padding:30px 20px;display:flex;flex-direction:column;align-items:center;-webkit-overflow-scrolling:touch}
+.reading-content{max-width:720px;width:100%;font-family:Georgia,serif;font-size:1.1rem;line-height:1.85;user-select:text;-webkit-user-select:text;overflow-wrap:anywhere}
+.reading-content p{margin-bottom:1.4rem}
+.reading-content h1,.reading-content h2,.reading-content h3{margin:1.2rem 0 .8rem;line-height:1.3}
+.reading-content table{max-width:100%;display:block;overflow-x:auto}
+.sheet-pad .reading-container{padding-bottom:52dvh}
+.sidebar{width:360px;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;z-index:15}
+.sidebar.hid{display:none}
+.grip{display:none}
+.sidebar-tabs{display:flex;border-bottom:1px solid var(--border)}
+.tab-btn{flex:1;padding:12px 10px;border:none;background:none;color:var(--muted);cursor:pointer;font-weight:600;font-size:.85rem;font-family:inherit;border-bottom:2px solid transparent}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary);background:var(--bg)}
+.close-btn{display:none;background:none;border:none;font-size:1.1rem;color:var(--muted);cursor:pointer;padding:0 14px}
+.sidebar-body{flex:1;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch}
+.result-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px}
+.word-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:4px}
+.word-title{font-size:1.2rem;font-weight:700}
+.word-ipa{color:var(--muted);font:.9rem monospace}
+.word-pos{font-style:italic;color:var(--primary);font-size:.85rem}
+.meaning-list{margin:6px 0 0 16px;font-size:.92rem}
+.meaning-list li{margin-bottom:6px}
+.ai-badge{display:inline-block;font-size:.75rem;padding:2px 6px;border-radius:4px;background:var(--accent);color:#fff;margin-bottom:6px}
+.source-context{font-size:.82rem;color:var(--muted);border-left:3px solid var(--border);padding-left:8px;margin-top:8px;font-style:italic}
+.saved-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;justify-content:space-between}
+.saved-item .x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:4px 8px;align-self:flex-start}
+#selBar{position:fixed;z-index:30;display:flex;gap:2px;background:var(--bar);color:var(--bar-text);border-radius:10px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+#selBar button{background:none;border:none;color:inherit;font-weight:600;font-size:.85rem;font-family:inherit;padding:8px 12px;border-radius:8px;cursor:pointer;white-space:nowrap}
+#selBar button:hover{background:rgba(127,127,127,.25)}
+#backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:14}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;align-items:center;justify-content:center;padding:16px}
+.modal-card{background:var(--surface);border-radius:12px;width:100%;max-width:540px;max-height:92dvh;overflow-y:auto;padding:20px;border:1px solid var(--border)}
+.modal-card textarea,.modal-card input[type=password]{width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;font-family:inherit}
+.modal-card label{font-size:.85rem;font-weight:600}
+@media (max-width:1024px){
+  #searchBtn{display:inline-flex}
+  .search-group{display:none;order:3;flex-basis:100%;max-width:none;margin:0}
+  .search-group.show{display:flex}
+}
+@media (max-width:768px){
+  header{padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+  .lbl{display:none}
+  .search-group.show{flex-direction:column;align-items:stretch}
+  .search-group input,.modal-card textarea{font-size:16px;min-height:42px}
+  .btn{min-height:40px;min-width:40px}
+  .reading-container{padding:18px 14px}
+  .sidebar{position:fixed;left:0;right:0;bottom:0;width:100%;height:50dvh;border-left:none;border-top:1px solid var(--border);border-radius:16px 16px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.25);transform:translateY(110%);transition:transform .25s ease;z-index:16;padding-bottom:env(safe-area-inset-bottom,0px)}
+  .sidebar.hid{display:flex}
+  .sidebar.open{transform:none}
+  .grip{display:block;width:40px;height:4px;border-radius:2px;background:var(--border);margin:8px auto 0}
+  .close-btn{display:block}
+  #backdrop.on{display:block}
+}
+</style>
+</head>
+<body>
+<header>
+  <a href="home.html" class="brand-link">📖<span class="lbl"> ReadForge-VOCZ</span></a>
+  <div class="search-group" id="searchGroup">
+    <input type="text" id="dictInput" placeholder="📖 Tra từ đơn (Dict)..." enterkeyhint="search" autocapitalize="none" onkeydown="if(event.key==='Enter')lookupWord(this.value)">
+    <input type="text" id="aiInput" placeholder="✨ Giải nghĩa câu/ngữ pháp (AI)..." enterkeyhint="send" onkeydown="if(event.key==='Enter')explainWithAI(this.value)">
+  </div>
+  <div class="nav-actions">
+    <button class="btn btn-primary" onclick="openLoad()" aria-label="Tải bài">📥<span class="lbl"> Tải bài</span></button>
+    <button class="btn" id="searchBtn" onclick="toggleSearch()" aria-label="Tìm kiếm">🔍</button>
+    <button class="btn" onclick="toggleSide()" aria-label="Kho từ">📂<span class="lbl"> Kho</span> (<span id="savedCount">0</span>)</button>
+    <button class="btn" onclick="cycleTheme()" aria-label="Đổi giao diện">🎨</button>
+    <div class="menu-wrap">
+      <button class="btn" onclick="toggleMenu(event)" aria-label="Thêm">⋯</button>
+      <div class="menu" id="menu" hidden>
+        <div class="row">Cỡ chữ <button class="btn" onclick="changeFs(-.1)">A−</button><button class="btn" onclick="changeFs(.1)">A+</button></div>
+        <button class="btn" onclick="openKey()">🔑 API Key</button>
+        <button class="btn btn-danger" onclick="deleteBook()">🗑️ Xóa bài</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="workspace" id="workspace">
+  <div class="reading-container" id="readerBox">
+    <div class="reading-content" id="readerArea">
+      <p><em>Chào bạn! Hãy nhấn nút <strong>📥</strong> ở góc trên để dán văn bản hoặc nạp file Word (.docx) vào đọc nhé. Bôi đen hoặc chạm đúp vào chữ để tra từ, hỏi AI hay lưu từ.</em></p>
+    </div>
+  </div>
+  <div id="backdrop" onclick="hideSide()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="grip"></div>
+    <div class="sidebar-tabs">
+      <button class="tab-btn active" id="tabLookupBtn" onclick="switchTab('lookup')">Kết quả tra</button>
+      <button class="tab-btn" id="tabSavedBtn" onclick="switchTab('saved')">Từ đã lưu</button>
+      <button class="close-btn" onclick="hideSide()" aria-label="Đóng">✕</button>
+    </div>
+    <div class="sidebar-body" id="lookupTab">
+      <div id="lookupContent" style="color:var(--muted);font-size:.9rem">Chạm đúp hoặc bôi đen chữ trong bài để tra nghĩa, hỏi AI hoặc lưu từ.</div>
+    </div>
+    <div class="sidebar-body" id="savedTab" hidden>
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:12px">
+        <button class="btn" onclick="exportCSV()">📥 Xuất CSV (Anki)</button>
+        <button class="btn btn-danger" onclick="clearSaved()">Xóa kho</button>
+      </div>
+      <div id="savedList"></div>
+    </div>
+  </aside>
+</div>
+
+<div id="selBar" hidden>
+  <button id="bDict" onpointerdown="event.preventDefault()" onclick="selDict()">📖 Tra từ</button>
+  <button onpointerdown="event.preventDefault()" onclick="selAI()">✨ Hỏi AI</button>
+  <button id="bSave" onpointerdown="event.preventDefault()" onclick="selSave()">⭐ Lưu</button>
+</div>
+
+<div class="modal-backdrop" id="loadModal">
+  <div class="modal-card">
+    <h3 style="margin-bottom:14px">📥 Nạp bài đọc</h3>
+    <div style="margin-bottom:14px"><label>1. Chọn file (.docx hoặc .txt):</label>
+      <input type="file" id="fileInput" accept=".docx,.txt" style="margin-top:6px;width:100%;font-size:.85rem"></div>
+    <div style="margin-bottom:16px"><label>2. Hoặc dán văn bản vào đây:</label>
+      <textarea id="rawText" rows="7" placeholder="Paste bài báo hoặc đoạn trích tiếng Anh..."></textarea></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" onclick="closeLoad()">Hủy</button>
+      <button class="btn btn-primary" onclick="confirmLoad()">Bắt đầu đọc</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="keyModal">
+  <div class="modal-card">
+    <h3 style="margin-bottom:10px">🔑 Gemini API Key</h3>
+    <p style="font-size:.82rem;color:var(--muted)">Key chỉ được lưu trên trình duyệt của bạn.</p>
+    <input type="password" id="keyInput" autocomplete="off">
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="btn" onclick="closeKey()">Hủy</button>
+      <button class="btn btn-primary" onclick="saveKey()">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Tên model Gemini: hãy đổi nếu Google đã đổi/ngừng model này
+const GEMINI_MODEL="gemini-2.0-flash";
+const CACHE_KEY="dict_cache_data",SAVED_KEY="saved_vocab_data",BOOK_KEY="saved_book_content",API_KEY="gemini_api_key",FS_KEY="read_fs";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const getJSON=(k,d)=>{try{return JSON.parse(store.get(k,"")||"null")||d}catch(e){return d}};
+const mob=()=>matchMedia("(max-width:768px)").matches;
+const coarse=()=>matchMedia("(pointer:coarse)").matches;
+const readerArea=$("readerArea");
+let current=null,sel={text:"",ctx:""};
+
+// ---------- Kho từ ----------
+const getSaved=()=>getJSON(SAVED_KEY,[]);
+function saveWord(e){
+  const list=getSaved();
+  if(!list.find(i=>i.word.toLowerCase()===e.word.toLowerCase())){
+    list.unshift(e);
+    if(!store.set(SAVED_KEY,JSON.stringify(list)))alert("Không lưu được (bộ nhớ trình duyệt đầy).");
+    updateCount();renderSaved();
+  }
+}
+function saveCurrent(){if(current){saveWord(current);const b=$("saveBtn");if(b)b.textContent="✓ Đã lưu"}}
+function delWord(i){const l=getSaved();l.splice(i,1);store.set(SAVED_KEY,JSON.stringify(l));updateCount();renderSaved()}
+function updateCount(){$("savedCount").textContent=getSaved().length}
+function renderSaved(){
+  const l=getSaved(),c=$("savedList");
+  if(!l.length){c.innerHTML='<div style="color:var(--muted);font-size:.85rem">Chưa có từ nào trong kho.</div>';return}
+  c.innerHTML=l.map((i,n)=>`<div class="saved-item"><div><strong>${esc(i.word)}</strong> <span style="font-size:.85rem;color:var(--muted)">${esc(i.ipa)}</span>
+    <div style="font-size:.85rem;margin-top:2px">${esc((i.definitions||[])[0])}</div>
+    ${i.context?`<div class="source-context">${esc(i.context)}</div>`:""}</div>
+    <button class="x" onclick="delWord(${n})" aria-label="Xóa từ">✕</button></div>`).join("");
+}
+function exportCSV(){
+  const l=getSaved();if(!l.length)return alert("Kho từ hiện đang trống!");
+  const q=s=>'"'+String(s==null?"":s).replace(/"/g,'""')+'"';
+  const csv="\ufeffWord,IPA,Definition,Context\n"+l.map(i=>[i.word,i.ipa,(i.definitions||[])[0],i.context].map(q).join(",")).join("\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));
+  a.download=`readforge_vocab_${Date.now()}.csv`;a.click();
+}
+function clearSaved(){if(confirm("Xóa sạch toàn bộ từ trong kho?")){store.del(SAVED_KEY);updateCount();renderSaved()}}
+
+// ---------- Tra từ ----------
+async function lookupWord(word,ctx=""){
+  const w=word.trim().replace(/[.,/#!$%^&*;:{}=\-_`~()?"'“”‘’—]/g,"");
+  if(!w)return;
+  showSide();switchTab("lookup");
+  const box=$("lookupContent"),cache=getJSON(CACHE_KEY,{}),k=w.toLowerCase();
+  if(cache[k]){renderDict(cache[k],ctx,true);return}
+  box.innerHTML=`Đang tra từ "<b>${esc(w)}</b>"...`;
+  pending={w,ctx};let why="net";
+  try{
+    const r=await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/"+encodeURIComponent(w));
+    why="miss";
+    if(!r.ok)throw 0;
+    const d=await r.json();
+    const res={word:w,ipa:(d[0].phonetics.find(p=>p.text)||{}).text||"",pos:(d[0].meanings[0]||{}).partOfSpeech||"",
+      definitions:((d[0].meanings[0]||{}).definitions||[]).slice(0,3).map(x=>x.definition)};
+    cache[k]=res;store.set(CACHE_KEY,JSON.stringify(cache));
+    renderDict(res,ctx,false);
+  }catch(e){
+    const msg=why==="net"?"⚠️ Không kết nối được từ điển (mất mạng, hoặc khung xem trước đang chặn kết nối). Hãy mở file bằng trình duyệt thường.":`⚠️ Từ điển miễn phí không có từ "<b>${esc(w)}</b>".`;
+    box.innerHTML=`${msg}<div style="margin-top:10px"><button class="btn btn-primary" onclick="askAIWord()">✨ Hỏi AI về từ này</button></div>`;
+  }
+}
+let pending={w:"",ctx:""};
+function askAIWord(){explainWithAI(pending.ctx?`${pending.ctx}\n(Giải nghĩa từ: ${pending.w})`:pending.w)}
+function renderDict(it,ctx,cached){
+  current={...it,context:ctx};
+  $("lookupContent").innerHTML=`<div class="result-card">
+    <div class="word-head"><span class="word-title">${esc(it.word)}</span><span class="word-ipa">${esc(it.ipa)}</span></div>
+    <div class="word-pos">${esc(it.pos)} ${cached?'<span style="font-size:.75rem;color:var(--muted)">(Cached)</span>':""}</div>
+    <ul class="meaning-list">${it.definitions.map(d=>`<li>${esc(d)}</li>`).join("")}</ul>
+    ${ctx?`<div class="source-context">${esc(ctx)}</div>`:""}
+    <div style="margin-top:10px"><button class="btn btn-primary" id="saveBtn" onclick="saveCurrent()">⭐ Lưu từ này</button></div></div>`;
+}
+
+// ---------- AI ----------
+async function explainWithAI(text){
+  text=(text||"").trim();if(!text)return;
+  const key=store.get(API_KEY,"");
+  if(!key){openKey();return}
+  showSide();switchTab("lookup");
+  const box=$("lookupContent");box.textContent="✨ Đang nhờ AI phân tích ngữ cảnh...";
+  try{
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(key)}`,{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({contents:[{parts:[{text:`Phân tích câu/cụm sau cho người đọc sách:\n"${text}"\n\nYêu cầu trả về thật ngắn gọn:\n1. Dịch nghĩa tiếng Việt tự nhiên theo ngữ cảnh.\n2. Phân tích ngữ pháp hoặc cụm từ (idiom/collocation) quan trọng.\n3. Viết lại 1 câu đơn giản hơn (paraphrase).`}]}]})});
+    const d=await r.json();
+    const reply=d.candidates&&d.candidates[0]&&d.candidates[0].content.parts[0].text;
+    if(!reply)throw 0;
+    box.innerHTML=`<div class="result-card"><span class="ai-badge">AI Assistant</span>
+      <div style="font-weight:600;margin-bottom:8px">"${esc(text)}"</div>
+      <div style="font-size:.92rem;line-height:1.6;white-space:pre-wrap">${esc(reply)}</div></div>`;
+  }catch(e){box.textContent="⚠️ Lỗi gọi AI: hãy kiểm tra API key, tên model hoặc đường truyền mạng."}
+}
+
+// ---------- Chọn chữ -> thanh nổi (chuột + cảm ứng) ----------
+function sentenceOf(r,text){
+  const n=r.startContainer,el=(n.nodeType===3?n.parentElement:n).closest("p,li,h1,h2,h3,h4,td")||readerArea;
+  const full=el.textContent,i=full.indexOf(text);if(i<0)return"";
+  const re=/[^.!?]+[.!?]*\s*/g;let m;
+  while((m=re.exec(full)))if(i>=m.index&&i<m.index+m[0].length)return m[0].trim().slice(0,220);
+  return full.slice(0,120);
+}
+let selT;
+function queueSel(){clearTimeout(selT);selT=setTimeout(updateSel,180)}
+function updateSel(){
+  const bar=$("selBar"),s=getSelection();
+  if(!s||s.isCollapsed||!s.rangeCount){bar.hidden=true;return}
+  const r=s.getRangeAt(0);
+  if(!readerArea.contains(r.commonAncestorContainer)){bar.hidden=true;return}
+  const text=s.toString().trim();
+  if(!text||text.length>600){bar.hidden=true;return}
+  sel={text,ctx:sentenceOf(r,text)};
+  $("bDict").hidden=/\s/.test(text);
+  $("bSave").textContent="⭐ Lưu";
+  bar.hidden=false;
+  const b=r.getBoundingClientRect(),w=bar.offsetWidth,h=bar.offsetHeight;
+  let top=coarse()?b.bottom+14:b.top-h-8;
+  if(top<60)top=b.bottom+10;
+  if(top+h>innerHeight-8)top=Math.max(60,b.top-h-8);
+  bar.style.top=top+"px";
+  bar.style.left=Math.min(Math.max(8,b.left+b.width/2-w/2),innerWidth-w-8)+"px";
+}
+document.addEventListener("selectionchange",queueSel);
+$("readerBox").addEventListener("scroll",queueSel,{passive:true});
+function selDict(){$("dictInput").value=sel.text;lookupWord(sel.text,sel.ctx);scrollToSel()}
+function selAI(){$("aiInput").value=sel.text;explainWithAI(sel.text);scrollToSel()}
+function selSave(){
+  const k=sel.text.toLowerCase(),c=getJSON(CACHE_KEY,{})[k]||{};
+  saveWord({word:/\s/.test(sel.text)?sel.text:k,ipa:c.ipa||"",pos:c.pos||"",definitions:c.definitions||[],context:sel.ctx});
+  $("bSave").textContent="✓ Đã lưu";
+}
+function scrollToSel(){
+  if(!mob())return;
+  setTimeout(()=>{const s=getSelection();if(!s||!s.rangeCount)return;
+    const b=s.getRangeAt(0).getBoundingClientRect();
+    if(b.bottom>innerHeight*.5)$("readerBox").scrollBy({top:b.bottom-innerHeight*.35,behavior:"smooth"});},280);
+}
+readerArea.addEventListener("dblclick",()=>{
+  if(coarse())return;
+  const t=getSelection().toString().trim();
+  if(t&&!/\s/.test(t)){$("dictInput").value=t;lookupWord(t,sentenceOf(getSelection().getRangeAt(0),t))}
+});
+
+// ---------- Tải / xóa bài ----------
+function openLoad(){$("loadModal").style.display="flex"}
+function closeLoad(){$("loadModal").style.display="none"}
+const toHtml=t=>t.split(/\n\s*\n/).filter(x=>x.trim()).map(p=>"<p>"+esc(p.trim())+"</p>").join("");
+function clean(html){
+  const d=new DOMParser().parseFromString(html,"text/html");
+  d.querySelectorAll("script,style,iframe,object,embed,img,link,meta").forEach(e=>e.remove());
+  d.querySelectorAll("*").forEach(e=>[...e.attributes].forEach(a=>{if(/^on/i.test(a.name)||/^\s*javascript:/i.test(a.value))e.removeAttribute(a.name)}));
+  return d.body.innerHTML;
+}
+function applyContent(html){
+  const c=clean(html);
+  readerArea.innerHTML=c;$("readerBox").scrollTop=0;
+  if(!store.set(BOOK_KEY,c))alert("Bài quá dài nên không lưu lại được cho lần mở sau, nhưng bạn vẫn đọc bình thường.");
+  closeLoad();$("rawText").value="";$("fileInput").value="";
+}
+async function confirmLoad(){
+  const f=$("fileInput").files[0],raw=$("rawText").value.trim();
+  if(f){
+    const n=f.name.toLowerCase();
+    if(n.endsWith(".docx")){
+      if(typeof mammoth==="undefined")return alert("Chưa tải được thư viện đọc Word. Hãy kiểm tra mạng.");
+      try{const r=await mammoth.convertToHtml({arrayBuffer:await f.arrayBuffer()},{convertImage:mammoth.images.imgElement(()=>Promise.resolve({src:""}))});applyContent(r.value)}
+      catch(e){alert("Không đọc được file Word này.")}
+      return;
+    }
+    if(n.endsWith(".txt")){applyContent(toHtml(await f.text()));return}
+  }
+  if(raw)applyContent(toHtml(raw));else alert("Hãy chọn file hoặc dán văn bản.");
+}
+function deleteBook(){
+  closeMenu();
+  if(confirm("Xóa bài đọc hiện tại? (Kho từ vựng vẫn được giữ)")){
+    store.del(BOOK_KEY);
+    readerArea.innerHTML='<p><em>Bài đọc đã được xóa. Nhấn nút <strong>📥</strong> để nạp nội dung mới.</em></p>';
+  }
+}
+
+// ---------- Giao diện ----------
+function showSide(){
+  const s=$("sidebar");
+  if(mob()){s.classList.add("open");$("backdrop").classList.add("on");$("workspace").classList.add("sheet-pad")}
+  else s.classList.remove("hid");
+}
+function hideSide(){
+  $("sidebar").classList.remove("open");$("backdrop").classList.remove("on");$("workspace").classList.remove("sheet-pad");
+  if(!mob())$("sidebar").classList.add("hid");
+}
+function toggleSide(){
+  const s=$("sidebar"),shown=mob()?s.classList.contains("open"):!s.classList.contains("hid");
+  if(shown)hideSide();else{showSide();switchTab("saved")}
+}
+function switchTab(t){
+  $("tabLookupBtn").classList.toggle("active",t==="lookup");$("tabSavedBtn").classList.toggle("active",t==="saved");
+  $("lookupTab").hidden=t!=="lookup";$("savedTab").hidden=t!=="saved";
+}
+function toggleSearch(){const g=$("searchGroup");g.classList.toggle("show");if(g.classList.contains("show"))$("dictInput").focus()}
+function toggleMenu(e){e.stopPropagation();$("menu").hidden=!$("menu").hidden}
+function closeMenu(){$("menu").hidden=true}
+document.addEventListener("click",e=>{if(!e.target.closest(".menu-wrap"))closeMenu()});
+function setTheme(t){document.documentElement.setAttribute("data-theme",t);store.set("vocz-theme",t)}
+function cycleTheme(){const T=["light","sepia","dark"],c=document.documentElement.getAttribute("data-theme")||"light";setTheme(T[(T.indexOf(c)+1)%3])}
+let fs=parseFloat(store.get(FS_KEY,"1.1"))||1.1;
+function applyFs(){readerArea.style.fontSize=fs+"rem"}
+function changeFs(d){fs=Math.min(1.7,Math.max(.9,+(fs+d).toFixed(2)));applyFs();store.set(FS_KEY,String(fs))}
+function openKey(){closeMenu();$("keyInput").value=store.get(API_KEY,"");$("keyModal").style.display="flex"}
+function closeKey(){$("keyModal").style.display="none"}
+function saveKey(){store.set(API_KEY,$("keyInput").value.trim());closeKey()}
+document.querySelectorAll(".modal-backdrop").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.style.display="none"}));
+
+window.addEventListener("DOMContentLoaded",()=>{
+  const b=store.get(BOOK_KEY,"");
+  if(b)readerArea.innerHTML=clean(b);
+  applyFs();updateCount();renderSaved();
+  if(mob())$("sidebar").classList.add("hid");
+});
+</script>
+</body>
+</html>
