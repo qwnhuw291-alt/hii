@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>ReadForge-VOCZ</title>
+<title>ReadForge - Trình đọc & Tra từ thông minh</title>
 <script>try{var t=localStorage.getItem('vocz-theme');if(t==='light'||t==='sepia'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <style>
@@ -89,7 +89,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:8
 </head>
 <body>
 <header>
-  <a href="home.html" class="brand-link">📖<span class="lbl"> ReadForge-VOCZ</span></a>
+  <a href="home.html" class="brand-link">📖<span class="lbl"> ReadForge</span></a>
   <div class="search-group" id="searchGroup">
     <input type="text" id="dictInput" placeholder="📖 Tra từ đơn (Dict)..." enterkeyhint="search" autocapitalize="none" onkeydown="if(event.key==='Enter')lookupWord(this.value)">
     <input type="text" id="aiInput" placeholder="✨ Giải nghĩa câu/ngữ pháp (AI)..." enterkeyhint="send" onkeydown="if(event.key==='Enter')explainWithAI(this.value)">
@@ -170,8 +170,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:8
 </div>
 
 <script>
-// Tên model Gemini: hãy đổi nếu Google đã đổi/ngừng model này
-const GEMINI_MODEL="gemini-2.0-flash";
+// Tên model Gemini (đổi tại đây nếu Google đổi tên model)
+const GEMINI_MODEL="gemini-3.8-flash";
 const CACHE_KEY="dict_cache_data",SAVED_KEY="saved_vocab_data",BOOK_KEY="saved_book_content",API_KEY="gemini_api_key",FS_KEY="read_fs";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -199,53 +199,91 @@ function renderSaved(){
   const l=getSaved(),c=$("savedList");
   if(!l.length){c.innerHTML='<div style="color:var(--muted);font-size:.85rem">Chưa có từ nào trong kho.</div>';return}
   c.innerHTML=l.map((i,n)=>`<div class="saved-item"><div><strong>${esc(i.word)}</strong> <span style="font-size:.85rem;color:var(--muted)">${esc(i.ipa)}</span>
-    <div style="font-size:.85rem;margin-top:2px">${esc((i.definitions||[])[0])}</div>
+    <div style="font-size:.85rem;margin-top:2px">${esc((i.definitions||[])[0])}</div>${i.vi?`<div style="font-size:.85rem;font-weight:600">🇻🇳 ${esc(i.vi)}</div>`:""}
     ${i.context?`<div class="source-context">${esc(i.context)}</div>`:""}</div>
     <button class="x" onclick="delWord(${n})" aria-label="Xóa từ">✕</button></div>`).join("");
 }
 function exportCSV(){
   const l=getSaved();if(!l.length)return alert("Kho từ hiện đang trống!");
   const q=s=>'"'+String(s==null?"":s).replace(/"/g,'""')+'"';
-  const csv="\ufeffWord,IPA,Definition,Context\n"+l.map(i=>[i.word,i.ipa,(i.definitions||[])[0],i.context].map(q).join(",")).join("\n");
+  const csv="\ufeffWord,IPA,Definition,Vietnamese,Context\n"+l.map(i=>[i.word,i.ipa,(i.definitions||[])[0],i.vi,i.context].map(q).join(",")).join("\n");
   const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));
   a.download=`readforge_vocab_${Date.now()}.csv`;a.click();
 }
 function clearSaved(){if(confirm("Xóa sạch toàn bộ từ trong kho?")){store.del(SAVED_KEY);updateCount();renderSaved()}}
 
-// ---------- Tra từ ----------
+// ---------- Tra từ (nhiều nguồn dự phòng) ----------
+async function getJ(url,opt,ms=5000){
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);
+  try{const r=await fetch(url,{...opt,signal:c.signal});if(!r.ok)throw{status:r.status};return await r.json()}
+  finally{clearTimeout(t)}
+}
+const strip=h=>String(h).replace(/<[^>]*>/g,"").replace(/&[a-z#0-9]+;/gi," ").replace(/\s+/g," ").trim();
+async function srcDictApi(w){
+  const d=await getJ("https://api.dictionaryapi.dev/api/v2/entries/en/"+encodeURIComponent(w)),m=d[0].meanings[0]||{};
+  const defs=(m.definitions||[]).slice(0,3).map(x=>x.definition);
+  if(!defs.length)throw{status:404};
+  return{word:w,ipa:(d[0].phonetics.find(p=>p.text)||{}).text||"",pos:m.partOfSpeech||"",definitions:defs,src:"Dictionary API"};
+}
+async function srcWiki(w){
+  const d=await getJ("https://en.wiktionary.org/api/rest_v1/page/definition/"+encodeURIComponent(w)),e=(d.en||[])[0];
+  const defs=e?e.definitions.slice(0,3).map(x=>strip(x.definition)).filter(Boolean):[];
+  if(!defs.length)throw{status:404};
+  return{word:w,ipa:"",pos:(e.partOfSpeech||"").toLowerCase(),definitions:defs,src:"Wiktionary"};
+}
+async function srcGemini(w,ctx){
+  const key=store.get(API_KEY,"");if(!key)throw{status:0};
+  const p=`Từ tiếng Anh "${w}"${ctx?` trong câu: "${ctx}"`:""}. Trả về JSON: {"ipa":"","pos":"","en":["tối đa 2 định nghĩa tiếng Anh ngắn"],"vi":"nghĩa tiếng Việt ngắn gọn theo ngữ cảnh"}`;
+  const d=await getJ(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(key)}`,
+    {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:p}]}],generationConfig:{responseMimeType:"application/json"}})},15000);
+  const j=JSON.parse(d.candidates[0].content.parts[0].text.replace(/```json|```/g,"").trim());
+  return{word:w,ipa:j.ipa||"",pos:j.pos||"",definitions:j.en||[],vi:j.vi||"",src:"Gemini"};
+}
+let pending={w:"",ctx:""};
 async function lookupWord(word,ctx=""){
   const w=word.trim().replace(/[.,/#!$%^&*;:{}=\-_`~()?"'“”‘’—]/g,"");
   if(!w)return;
+  pending={w,ctx};
   showSide();switchTab("lookup");
-  const box=$("lookupContent"),cache=getJSON(CACHE_KEY,{}),k=w.toLowerCase();
-  if(cache[k]){renderDict(cache[k],ctx,true);return}
+  const box=$("lookupContent"),k=w.toLowerCase(),cache=getJSON(CACHE_KEY,{});
+  if(cache[k]&&cache[k].definitions&&cache[k].definitions.length){renderDict(cache[k],ctx,true);return}
   box.innerHTML=`Đang tra từ "<b>${esc(w)}</b>"...`;
-  pending={w,ctx};let why="net";
-  try{
-    const r=await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/"+encodeURIComponent(w));
-    why="miss";
-    if(!r.ok)throw 0;
-    const d=await r.json();
-    const res={word:w,ipa:(d[0].phonetics.find(p=>p.text)||{}).text||"",pos:(d[0].meanings[0]||{}).partOfSpeech||"",
-      definitions:((d[0].meanings[0]||{}).definitions||[]).slice(0,3).map(x=>x.definition)};
-    cache[k]=res;store.set(CACHE_KEY,JSON.stringify(cache));
-    renderDict(res,ctx,false);
-  }catch(e){
-    const msg=why==="net"?"⚠️ Không kết nối được từ điển (mất mạng, hoặc khung xem trước đang chặn kết nối). Hãy mở file bằng trình duyệt thường.":`⚠️ Từ điển miễn phí không có từ "<b>${esc(w)}</b>".`;
-    box.innerHTML=`${msg}<div style="margin-top:10px"><button class="btn btn-primary" onclick="askAIWord()">✨ Hỏi AI về từ này</button></div>`;
-  }
+  let res=null,free=[],gem=null;
+  try{res=await Promise.any([srcDictApi(w),srcWiki(w)])}catch(ag){free=ag.errors||[ag]}
+  if(!res&&store.get(API_KEY,"")){box.innerHTML=`Các từ điển miễn phí chưa trả lời, đang hỏi AI về "<b>${esc(w)}</b>"...`;
+    try{res=await srcGemini(w,ctx)}catch(e){gem=e}}
+  if(res){cache[k]={word:res.word,ipa:res.ipa,pos:res.pos,definitions:res.definitions,vi:res.vi||""};store.set(CACHE_KEY,JSON.stringify(cache));renderDict(res,ctx,false);return}
+  const miss=free.length&&free.every(e=>e&&e.status===404);
+  box.innerHTML=`${miss?`⚠️ Các từ điển miễn phí không có từ "<b>${esc(w)}</b>".`:"⚠️ Không kết nối được từ điển (mất mạng, dịch vụ đang quá tải, hoặc khung xem trước đang chặn kết nối)."}
+    ${gem?'<div style="margin-top:6px;font-size:.85rem;color:var(--muted)">AI cũng báo lỗi: hãy kiểm tra API key và tên model.</div>':""}
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="lookupWord(pending.w,pending.ctx)">🔄 Thử lại</button>
+    <button class="btn" onclick="askAIWord()">✨ Hỏi AI về từ này</button></div>`;
 }
-let pending={w:"",ctx:""};
 function askAIWord(){explainWithAI(pending.ctx?`${pending.ctx}\n(Giải nghĩa từ: ${pending.w})`:pending.w)}
 function renderDict(it,ctx,cached){
   current={...it,context:ctx};
+  const hasKey=!!store.get(API_KEY,"");
   $("lookupContent").innerHTML=`<div class="result-card">
     <div class="word-head"><span class="word-title">${esc(it.word)}</span><span class="word-ipa">${esc(it.ipa)}</span></div>
-    <div class="word-pos">${esc(it.pos)} ${cached?'<span style="font-size:.75rem;color:var(--muted)">(Cached)</span>':""}</div>
+    <div class="word-pos">${esc(it.pos)} <span style="font-size:.75rem;color:var(--muted)">${cached?"(Cached)":it.src?"("+esc(it.src)+")":""}</span></div>
     <ul class="meaning-list">${it.definitions.map(d=>`<li>${esc(d)}</li>`).join("")}</ul>
+    ${it.vi?`<div style="margin-top:8px;font-weight:600">🇻🇳 ${esc(it.vi)}</div>`:""}
     ${ctx?`<div class="source-context">${esc(ctx)}</div>`:""}
-    <div style="margin-top:10px"><button class="btn btn-primary" id="saveBtn" onclick="saveCurrent()">⭐ Lưu từ này</button></div></div>`;
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" id="saveBtn" onclick="saveCurrent()">⭐ Lưu từ này</button>
+    ${!it.vi&&hasKey?'<button class="btn" id="viBtn" onclick="viMeaning()">🇻🇳 Nghĩa Việt</button>':""}</div></div>`;
+}
+async function viMeaning(){
+  if(!current)return;
+  const b=$("viBtn");if(b)b.textContent="Đang dịch...";
+  try{
+    const r=await srcGemini(current.word,current.context);
+    current.vi=r.vi;
+    const cache=getJSON(CACHE_KEY,{}),k=current.word.toLowerCase();
+    cache[k]={...(cache[k]||{word:current.word,ipa:current.ipa,pos:current.pos,definitions:current.definitions}),vi:r.vi};
+    store.set(CACHE_KEY,JSON.stringify(cache));
+    renderDict(current,current.context,false);
+  }catch(e){if(b)b.textContent="⚠️ Lỗi, thử lại"}
 }
 
 // ---------- AI ----------
@@ -302,7 +340,7 @@ function selDict(){$("dictInput").value=sel.text;lookupWord(sel.text,sel.ctx);sc
 function selAI(){$("aiInput").value=sel.text;explainWithAI(sel.text);scrollToSel()}
 function selSave(){
   const k=sel.text.toLowerCase(),c=getJSON(CACHE_KEY,{})[k]||{};
-  saveWord({word:/\s/.test(sel.text)?sel.text:k,ipa:c.ipa||"",pos:c.pos||"",definitions:c.definitions||[],context:sel.ctx});
+  saveWord({word:/\s/.test(sel.text)?sel.text:k,ipa:c.ipa||"",pos:c.pos||"",definitions:c.definitions||[],vi:c.vi||"",context:sel.ctx});
   $("bSave").textContent="✓ Đã lưu";
 }
 function scrollToSel(){
