@@ -1,1 +1,60 @@
-
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartListen AI - Luyện nghe TED Talks</title>
+  <link rel="stylesheet" href="listen.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="logo">🎧 SmartListen <span>AI</span></div>
+    <select id="talkSelect" class="talk-select" aria-label="Chọn bài nghe"></select>
+    <div class="api-box">
+      <input type="password" id="apiKeyInput" placeholder="Nhập Gemini API Key...">
+      <button id="saveKeyBtn">Lưu Key</button>
+    </div>
+  </header>
+  <main class="main-container">
+    <section class="player-column">
+      <div class="video-sticky-wrapper">
+        <div class="video-wrapper"><div id="player"></div></div>
+        <div class="playback-controls">
+          <button id="btnBack">⏪ Lùi 3s</button>
+          <button id="btnPlayPause">⏯ Phát/Dừng</button>
+          <button id="btnNext">Tiến 3s ⏩</button>
+        </div>
+      </div>
+      <div class="vocab-card" id="vocabCard">
+        <div class="vocab-header">
+          <span class="badge">Tra từ AI (Gemini)</span>
+          <span class="vocab-hint">Nhấp vào từ bất kỳ trong phụ đề để tra</span>
+        </div>
+        <div class="vocab-body" id="vocabContent">Chưa chọn từ nào.</div>
+      </div>
+      <p class="talk-meta" id="talkMeta"></p>
+    </section>
+    <section class="content-column">
+      <div class="tab-buttons">
+        <button class="tab-btn active" id="tabTranscriptBtn">Phụ đề tương tác</button>
+        <button class="tab-btn" id="tabQuizBtn">Bài tập trắc nghiệm</button>
+      </div>
+      <div class="tab-panel active" id="transcriptPanel">
+        <div class="panel-tools"><small>Bấm vào câu để tua · Bấm vào từ để tra · Phím: Space, A, D</small></div>
+        <div class="transcript-list" id="transcriptList"></div>
+      </div>
+      <div class="tab-panel" id="quizPanel">
+        <div class="quiz-toolbar">
+          <button id="btnGenerateQuiz" class="action-btn">✨ Tạo bài tập trắc nghiệm bằng AI</button>
+          <span id="quizLoading" class="loading-indicator hidden">Đang phân tích bài nói và tạo câu hỏi...</span>
+        </div>
+        <div class="quiz-container" id="quizContent">
+          <p class="empty-state">Bấm nút phía trên để Gemini tạo bài tập kiểm tra khả năng nghe hiểu của bạn.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="listen.js"></script>
+</body>
+</html>
