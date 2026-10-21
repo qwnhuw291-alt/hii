@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SmartListen AI - Luyện nghe TED Talks</title>
   <link rel="stylesheet" href="listen.css">
+  <script>
+    try {
+      var savedTheme = localStorage.getItem('vocz-theme');
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      }
+    } catch (e) {}
+  </script>
 </head>
 <body>
   <header class="app-header">
@@ -13,6 +21,9 @@
     <div class="api-box">
       <input type="password" id="apiKeyInput" placeholder="Nhập Gemini API Key...">
       <button id="saveKeyBtn">Lưu Key</button>
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="Chuyển sang giao diện sáng">
+        <span id="themeIcon" aria-hidden="true">☀️</span>
+      </button>
     </div>
   </header>
   <main class="main-container">
@@ -54,6 +65,29 @@
       </div>
     </section>
   </main>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var btn = document.getElementById('themeToggle');
+      var icon = document.getElementById('themeIcon');
+
+      function applyTheme(theme) {
+        var dark = theme === 'dark';
+        root.setAttribute('data-theme', theme);
+        icon.textContent = dark ? '☀️' : '🌙';
+        btn.setAttribute('aria-label', dark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối');
+      }
+
+      applyTheme(root.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+
+      btn.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        applyTheme(next);
+        try { localStorage.setItem('vocz-theme', next); } catch (e) {}
+      });
+    })();
+  </script>
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="listen.js"></script>
 </body>
