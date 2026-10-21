@@ -237,7 +237,7 @@ td input[type=checkbox]:disabled{opacity:.3;cursor:not-allowed}
   <button type="button" id="navHome" class="on"><span class="ico" aria-hidden="true">🏠</span>Trang chủ</button>
   <button type="button" id="navVocab"><span class="ico" aria-hidden="true">📚</span>Sổ Tay</button>
   <button type="button" id="navUser"><span class="ico" aria-hidden="true">👤</span>Hồ Sơ</button>
-  <a href="lis.html"><span class="ico" aria-hidden="true">🎧</span>Nghe</a>
+  <a href="listen/listen.html"><span class="ico" aria-hidden="true">🎧</span>Nghe</a>
   <a href="read.html"><span class="ico" aria-hidden="true">📖</span>Đọc</a>
   <a href="write/write.html"><span class="ico" aria-hidden="true">✍️</span>Viết</a>
   <a href="speak.html"><span class="ico" aria-hidden="true">🗣️</span>Nói</a>
@@ -248,7 +248,7 @@ td input[type=checkbox]:disabled{opacity:.3;cursor:not-allowed}
   <!-- TRANG CHỦ -->
   <section id="viewHome">
     <div class="home">
-      <a class="card mini" href="lis.html"><span class="ico" aria-hidden="true">🎧</span><h2>Luyện Nghe</h2></a>
+      <a class="card mini" href="listen/listen.html.html"><span class="ico" aria-hidden="true">🎧</span><h2>Luyện Nghe</h2></a>
       <a class="card mini" href="read.html"><span class="ico" aria-hidden="true">📖</span><h2>Luyện Đọc</h2></a>
       <a class="card mini" href="write/write.html"><span class="ico" aria-hidden="true">✍️</span><h2>Luyện Viết</h2></a>
       <a class="card mini" href="speak.html"><span class="ico" aria-hidden="true">🗣️</span><h2>Luyện Nói</h2></a>
@@ -326,7 +326,7 @@ td input[type=checkbox]:disabled{opacity:.3;cursor:not-allowed}
       <h2 id="playerName" style="font-size:1.5rem;font-weight:800"></h2>
     </div>
     <div class="board">
-      <div class="stat"><div class="lbl">🎧 Nghe</div><div class="num" id="stLis">0</div><div class="hint">điểm cao nhất</div></div>
+      <div class="stat"><div class="lbl">🎧 Nghe</div><div class="num" id="stListen">0</div><div class="hint">điểm cao nhất</div></div>
       <div class="stat"><div class="lbl">📖 Đọc</div><div class="num" id="stRead">0</div><div class="hint">điểm cao nhất</div></div>
       <div class="stat mid"><div class="lbl">✍️ Viết</div><div class="num" id="stWrite">0</div><div class="hint">điểm cao nhất</div></div>
       <div class="stat"><div class="lbl">🗣️ Nói</div><div class="num" id="stSpeak">0</div><div class="hint">điểm cao nhất</div></div>
@@ -484,7 +484,7 @@ function renderProfileStats() {
   const total = vocabRows.filter(r => r.word.trim() && r.meaning.trim()).length;
   const have = new Set(vocabRows.map(r => r.word.trim().toLowerCase()));
   const mastered = (userData.masteredWords || []).filter(w => have.has(w)).length;
-  $('stLis').textContent = fmt(userData.best_lis);
+  $('stListen').textContent = fmt(userData.best_listen);
   $('stRead').textContent = fmt(userData.best_read);
   $('stWrite').textContent = fmt(userData.best_write);
   $('stSpeak').textContent = fmt(userData.best_speak);
@@ -835,7 +835,7 @@ onAuthStateChanged(auth, async user => {
       avatar: d.avatar || "VOCZ1",
       streak: Number(d.streak) || 0,
       lastCheckinDate: d.lastCheckinDate || "",
-      best_lis: Number(d.best_lis) || 0,
+      best_listen: Number(d.best_listen) || 0,
       best_read: Number(d.best_read) || 0,
       best_write: Number(d.best_write) || 0,
       best_speak: Number(d.best_speak) || 0,
